@@ -1,0 +1,33 @@
+{% schema %}
+{
+  "name": "Gift Guide Product Grid",
+  "settings": [
+    { "type": "product", "id": "product_1", "label": "Product 1" },
+    { "type": "product", "id": "product_2", "label": "Product 2" },
+    { "type": "product", "id": "product_3", "label": "Product 3" },
+    { "type": "product", "id": "product_4", "label": "Product 4" },
+    { "type": "product", "id": "product_5", "label": "Product 5" },
+    { "type": "product", "id": "product_6", "label": "Product 6" }
+  ]
+}
+{% endschema %}
+
+<div class="gift-guide-grid">
+  {% for i in (1..6) %}
+    {% assign prod = section.settings["product_" | append: i] %}
+    {% if prod != blank %}
+      {% assign product = all_products[prod] %}
+      <div class="gift-guide-grid__item" data-handle="{{ product.handle }}">
+        <img src="{{ product.featured_image | img_url: '400x' }}" alt="{{ product.title }}">
+        <div class="gift-guide-grid__overlay">+</div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<div id="gift-guide-modal" class="gift-guide-modal hidden">
+  <div class="gift-guide-modal__content">
+    <button class="gift-guide-modal__close">×</button>
+    <div class="modal-product"></div>
+  </div>
+</div>

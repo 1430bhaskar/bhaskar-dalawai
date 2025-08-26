@@ -1,0 +1,29 @@
+{% schema %}
+{
+  "name": "Gift Guide Banner",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The Gift Guide" },
+    { "type": "textarea", "id": "subheading", "label": "Subheading", "default": "Discover Joy: Your Ultimate Holiday Gift Destination." },
+    { "type": "image_picker", "id": "hero_image", "label": "Hero Illustration" },
+    { "type": "url", "id": "cta_link", "label": "CTA Link" },
+    { "type": "text", "id": "cta_text", "label": "CTA Text", "default": "Shop Now" }
+  ]
+}
+{% endschema %}
+
+<section class="gift-guide-banner">
+  <div class="gift-guide-banner__content">
+    <h1>{{ section.settings.heading }}</h1>
+    <p>{{ section.settings.subheading }}</p>
+    {% if section.settings.cta_link %}
+      <a href="{{ section.settings.cta_link }}" class="btn">
+        {{ section.settings.cta_text }}
+      </a>
+    {% endif %}
+  </div>
+  {% if section.settings.hero_image %}
+    <div class="gift-guide-banner__image">
+      <img src="{{ section.settings.hero_image | img_url: 'master' }}" alt="Gift Guide banner" />
+    </div>
+  {% endif %}
+</section>
