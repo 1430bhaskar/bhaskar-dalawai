@@ -1,0 +1,326 @@
+{% comment %}
+Product Grid — Gift Guide
+- 6 products (selected in customizer)
+- "Soft Winter Jacket" handle for the auto-add rule
+- No jQuery. All JS is self-contained and scoped.
+{% endcomment %}
+
+<section class="sg-product-grid" aria-label="Gift Guide Product Grid">
+  <style>
+    .sg-grid-wrap { max-width: 1200px; margin: 60px auto; padding: 0 20px; }
+    .sg-grid-title { font-size: 28px; margin-bottom: 20px; font-weight:500; }
+    .sg-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; }
+    .sg-item { position: relative; overflow: hidden; padding-bottom: 100%; background:#f5f5f5; }
+    .sg-item img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+    .sg-hotspot { position:absolute; right:18px; top:18px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.95); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.08); cursor:pointer; font-weight:700; }
+
+    /* Modal */
+    .sg-modal { display:none; position:fixed; inset:0; z-index:1200; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:20px; }
+    .sg-modal.open { display:flex; }
+    .sg-modal-dialog { background:#fff; max-width:900px; width:100%; border-radius:6px; overflow:hidden; display:flex; gap:20px; position:relative; }
+    .sg-close { position:absolute; right:12px; top:10px; background:#fff; border-radius:50%; width:32px; height:32px; line-height:30px; text-align:center; border:1px solid #ddd; cursor:pointer; }
+
+    .sg-modal-left { flex:1 1 40%; min-height:240px; }
+    .sg-modal-left img { width:100%; height:100%; object-fit:cover; display:block; }
+    .sg-modal-right { flex:1 1 60%; padding:22px; display:flex; flex-direction:column; gap:10px; }
+    .sg-modal-title { font-size:20px; margin:0; }
+    .sg-modal-price { font-weight:700; font-size:18px; color:#111; }
+    .sg-modal-desc { color:#333; font-size:14px; line-height:1.4; }
+
+    /* Options */
+    .sg-variant { margin-top:6px; }
+    .sg-variant label { display:block; font-weight:600; margin-bottom:6px; }
+    .sg-segment { display:flex; gap:8px; }
+    .sg-seg-btn { flex:1; padding:10px 12px; border:1px solid #cfcfcf; background:#fff; cursor:pointer; }
+    .sg-seg-btn.active { outline:2px solid #0b57d0; border-color:#0b57d0; }
+    .sg-select { width:100%; padding:10px; border:1px solid #cfcfcf; background:#fff; }
+
+    /* Add to cart */
+    .sg-add-btn { margin-top:12px; padding:14px 18px; background:#111;color:#fff;border:none;cursor:pointer;border-radius:3px;font-weight:600; width:100%; position:relative; }
+    .sg-add-btn::after { content:"→"; position:absolute; right:18px; transition:transform .25s ease; }
+    .sg-add-btn:hover::after { transform: translateX(6px); }
+
+    @media (max-width: 980px) {
+      .sg-grid { grid-template-columns: repeat(2,1fr); }
+      .sg-modal-dialog { flex-direction:column; max-width:720px; }
+    }
+    @media (max-width: 520px) {
+      .sg-grid { grid-template-columns: 1fr; }
+      .sg-modal-right { padding:16px; }
+    }
+  </style>
+
+  <div class="sg-grid-wrap">
+    <h2 class="sg-grid-title">{{ section.settings.grid_title }}</h2>
+
+    <div class="sg-grid" data-jacket-handle="{{ section.settings.jacket_handle }}">
+      {% assign keys = "product_1,product_2,product_3,product_4,product_5,product_6" | split: "," %}
+      {% for key in keys %}
+        {% assign p = section.settings[key] %}
+        <div class="sg-item" {% if p %}data-product-handle="{{ p.handle }}"{% endif %}>
+          {% if p and p.featured_image %}
+            <img src="{{ p.featured_image | img_url: '1024x' }}" alt="{{ p.title | escape }}">
+          {% else %}
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#666;">Select a product</div>
+          {% endif %}
+          <button class="sg-hotspot" type="button" aria-label="Open product">+</button>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="sg-modal" id="sgProductModal" aria-hidden="true">
+    <div class="sg-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="sg-modal-title">
+      <button class="sg-close" id="sgModalClose" aria-label="Close">×</button>
+
+      <div class="sg-modal-left">
+        <img id="sgModalImage" src="" alt="">
+      </div>
+
+      <div class="sg-modal-right">
+        <h3 id="sg-modal-title" class="sg-modal-title"></h3>
+        <div id="sg-modal-price" class="sg-modal-price"></div>
+        <div id="sg-modal-desc" class="sg-modal-desc"></div>
+
+        <div id="sg-variant-widgets"></div>
+
+        <button id="sg-add-to-cart" class="sg-add-btn">ADD TO CART</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      // Money formatting via Shopify helper, using shop's format from Liquid
+      const moneyFormat = {{ shop.money_format | json }};
+      const fmt = (cents) => (window.Shopify && Shopify.formatMoney) ? Shopify.formatMoney(cents, moneyFormat) : (Number(cents)/100).toFixed(2);
+
+      // DOM elements
+      const grid = document.querySelector('.sg-grid');
+      const modal = document.getElementById('sgProductModal');
+      const closeBtn = document.getElementById('sgModalClose');
+      const imgEl = document.getElementById('sgModalImage');
+      const titleEl = document.getElementById('sg-modal-title');
+      const priceEl = document.getElementById('sg-modal-price');
+      const descEl = document.getElementById('sg-modal-desc');
+      const varWrap = document.getElementById('sg-variant-widgets');
+      const addBtn = document.getElementById('sg-add-to-cart');
+      const jacketHandle = grid ? grid.dataset.jacketHandle : null;
+
+      // Current selection state
+      let product = null;
+      let selection = {};    // {OptionName: "Value"}
+      let variant = null;
+
+      // Fetch product JSON, open modal
+      async function openModal(handle) {
+        try {
+          const res = await fetch(`/products/${handle}.js`);
+          if (!res.ok) throw new Error('Product fetch failed');
+          product = await res.json();
+
+          // Fill UI
+          imgEl.src = (product.images && product.images[0]) ? product.images[0] : '';
+          imgEl.alt = product.title || '';
+          titleEl.textContent = product.title || '';
+          descEl.textContent  = product.description || '';
+
+          // Default to first variant
+          variant = product.variants[0];
+          priceEl.textContent = fmt(variant.price);
+
+          // Build option UIs
+          buildOptionUIs(product);
+
+          // Show modal
+          modal.classList.add('open');
+          modal.setAttribute('aria-hidden', 'false');
+          addBtn.disabled = false;
+          addBtn.textContent = 'ADD TO CART';
+        } catch (e) {
+          console.error(e);
+          alert('Could not load product details.');
+        }
+      }
+
+      // Create widgets: Color => segmented buttons; others => select
+      function buildOptionUIs(product) {
+        varWrap.innerHTML = '';
+        selection = {};
+
+        const optNames = product.options || [];
+        optNames.forEach((name, idx) => {
+          const container = document.createElement('div');
+          container.className = 'sg-variant';
+
+          const label = document.createElement('label');
+          label.textContent = name;
+          container.appendChild(label);
+
+          const values = [...new Set(product.variants.map(v => v.options[idx]))];
+
+          // Color/Colour => segments; else => select
+          if (/^colou?r$/i.test(name)) {
+            const seg = document.createElement('div');
+            seg.className = 'sg-segment';
+
+            values.forEach((val, i) => {
+              const b = document.createElement('button');
+              b.type = 'button';
+              b.className = 'sg-seg-btn';
+              b.textContent = val;
+              if (i === 0) b.classList.add('active');
+              b.addEventListener('click', () => {
+                // toggle active
+                Array.from(seg.children).forEach(x => x.classList.remove('active'));
+                b.classList.add('active');
+                selection[name] = val;
+                resolveVariant();
+              });
+              seg.appendChild(b);
+            });
+
+            selection[name] = values[0];
+            container.appendChild(seg);
+          } else {
+            const sel = document.createElement('select');
+            sel.className = 'sg-select';
+            // Add placeholder for Size select (Figma shows "Choose your size")
+            if (/^size$/i.test(name)) {
+              const ph = document.createElement('option');
+              ph.value = '';
+              ph.textContent = 'Choose your size';
+              sel.appendChild(ph);
+            }
+            values.forEach((val, i) => {
+              const o = document.createElement('option');
+              o.value = val;
+              o.textContent = val;
+              sel.appendChild(o);
+            });
+            sel.value = values[0]; // default
+            selection[name] = values[0];
+            sel.addEventListener('change', () => { selection[name] = sel.value; resolveVariant(); });
+            container.appendChild(sel);
+          }
+
+          varWrap.appendChild(container);
+        });
+
+        // Resolve initial variant
+        resolveVariant();
+      }
+
+      // Match variant based on current selection
+      function resolveVariant() {
+        if (!product) return;
+        const match = product.variants.find(v => {
+          return (product.options || []).every((name, idx) => v.options[idx] === selection[name]);
+        });
+        if (match) {
+          variant = match;
+          priceEl.textContent = fmt(match.price);
+        }
+      }
+
+      // Build items list for add.js (handles jacket rule)
+      async function buildCartItems() {
+        const items = [{ id: variant.id, quantity: 1 }];
+
+        // Detect "Black" + "Medium" among selected values (case-insensitive)
+        const values = Object.values(selection).map(v => (v || '').toString().toLowerCase());
+        const needsJacket = values.includes('black') && values.includes('medium') && jacketHandle;
+
+        if (needsJacket) {
+          try {
+            const r = await fetch(`/products/${jacketHandle}.js`);
+            if (r.ok) {
+              const jacket = await r.json();
+              // Choose first available variant (simple test requirement)
+              if (jacket.variants && jacket.variants[0]) {
+                items.push({ id: jacket.variants[0].id, quantity: 1 });
+              }
+            }
+          } catch (e) {
+            console.warn('Jacket fetch failed', e);
+          }
+        }
+        return items;
+      }
+
+      // Add to cart (AJAX)
+      async function addToCart() {
+        if (!product || !variant) return;
+
+        // If there’s a Size option and user left placeholder, stop
+        const sizeOption = (product.options || []).find(n => /^size$/i.test(n));
+        if (sizeOption && (!selection[sizeOption] || selection[sizeOption] === 'Choose your size')) {
+          alert('Please choose your size.');
+          return;
+        }
+
+        addBtn.disabled = true;
+        addBtn.textContent = 'ADDING…';
+
+        try {
+          const items = await buildCartItems();
+
+          const res = await fetch('/cart/add.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items })
+          });
+          if (!res.ok) throw new Error('Add to cart failed');
+
+          addBtn.textContent = 'ADDED ✓';
+          setTimeout(() => { addBtn.textContent = 'ADD TO CART'; addBtn.disabled = false; closeModal(); }, 800);
+
+          // If your theme has a cart drawer, trigger it here (implementation varies by theme)
+        } catch (e) {
+          console.error(e);
+          addBtn.disabled = false;
+          addBtn.textContent = 'ADD TO CART';
+          alert('Failed to add to cart.');
+        }
+      }
+
+      function closeModal() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        product = null; variant = null; selection = {};
+        varWrap.innerHTML = '';
+      }
+
+      // EVENTS
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.sg-hotspot')) {
+          const item = e.target.closest('.sg-item');
+          const handle = item && item.getAttribute('data-product-handle');
+          if (handle) openModal(handle);
+        }
+        if (e.target === modal) closeModal();
+      });
+      closeBtn.addEventListener('click', closeModal);
+      addBtn.addEventListener('click', addToCart);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+    })();
+  </script>
+
+  {% schema %}
+  {
+    "name": "Product Grid — Gift Guide",
+    "settings": [
+      { "type": "text", "id": "grid_title", "label": "Grid title", "default": "Tisso vison in the wild" },
+      { "type": "product", "id": "product_1", "label": "Product 1" },
+      { "type": "product", "id": "product_2", "label": "Product 2" },
+      { "type": "product", "id": "product_3", "label": "Product 3" },
+      { "type": "product", "id": "product_4", "label": "Product 4" },
+      { "type": "product", "id": "product_5", "label": "Product 5" },
+      { "type": "product", "id": "product_6", "label": "Product 6" },
+      { "type": "text", "id": "jacket_handle", "label": "Soft Winter Jacket product handle (auto-add rule)", "default": "soft-winter-jacket" }
+    ],
+    "presets": [{ "name": "Gift Guide Grid", "category": "Custom" }]
+  }
+  {% endschema %}
+</section>

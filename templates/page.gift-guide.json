@@ -1,0 +1,25 @@
+{
+  "name": "Gift Guide Page",
+  "sections": {
+    "banner": {
+      "type": "banner-gift-guide",
+      "settings": {
+        "logo_text": "TISSO VISON",
+        "top_tagline": "Find the ideal gift for your loved ones.",
+        "heading": "The Gift Guide",
+        "description": "Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.",
+        "cta_text": "SHOP NOW",
+        "cta_url": "/collections/all",
+        "small_note": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+      }
+    },
+    "grid": {
+      "type": "product-grid-gift-guide",
+      "settings": {
+        "grid_title": "Tisso vison in the wild",
+        "jacket_handle": "soft-winter-jacket"
+      }
+    }
+  },
+  "order": ["banner", "grid"]
+}
