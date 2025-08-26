@@ -1,32 +1,26 @@
 {% comment %}
-  Gift Guide — Banner Section (fixed version)
+Gift Guide — Banner
+Editable via customizer:
+- logo_text, top_message, top_cta_text & top_cta_link
+- heading, subheading, cta_text & cta_link
+- hero_image (optional), bottom_ribbon_text
+This file also loads gift-guide.css (if you prefer load only once, remove duplicate).
 {% endcomment %}
 
 {{ 'gift-guide.css' | asset_url | stylesheet_tag }}
 
-<section id="gift-guide-banner-{{ section.id }}"
-  class="gift-guide-banner"
-  aria-label="Gift Guide banner"
->
-  <!-- Top bar -->
+<section id="gift-guide-banner-{{ section.id }}" class="gift-guide-banner" role="region" aria-label="Gift Guide banner">
   <div class="gg-topbar">
-    <div class="gg-topbar__left" aria-label="Brand">
-      {{ section.settings.logo_text }}
-    </div>
-
-    <div class="gg-topbar__center">
-      {{ section.settings.top_message }}
-    </div>
-
+    <div class="gg-topbar__logo">{{ section.settings.logo_text }}</div>
+    <div class="gg-topbar__center">{{ section.settings.top_message }}</div>
     {% if section.settings.top_cta_link != blank %}
-      <a class="gg-topbar__cta" href="{{ section.settings.top_cta_link }}" aria-label="{{ section.settings.top_cta_text }}">
-        <span>{{ section.settings.top_cta_text }}</span>
-        <span class="gg-arrow" aria-hidden="true">→</span>
+      <a class="gg-topbar__cta" href="{{ section.settings.top_cta_link }}">
+        {{ section.settings.top_cta_text }}
+        <span class="gg-topbar__cta-arrow" aria-hidden="true">→</span>
       </a>
     {% endif %}
   </div>
 
-  <!-- Main hero -->
   <div class="gg-hero">
     <div class="gg-hero__content">
       <h1 class="gg-hero__title">{{ section.settings.heading }}</h1>
@@ -46,17 +40,13 @@
 
     {% if section.settings.hero_image %}
       <div class="gg-hero__image">
-        <img
-          src="{{ section.settings.hero_image | img_url: '1200x' }}"
-          alt="{{ section.settings.hero_image_alt | default: section.settings.heading | escape }}">
+        <img src="{{ section.settings.hero_image | img_url: '1200x' }}" alt="{{ section.settings.hero_image_alt | default: section.settings.heading | escape }}">
       </div>
     {% endif %}
   </div>
 
   {% if section.settings.bottom_ribbon_text != blank %}
-    <div class="gg-ribbon" role="note">
-      {{ section.settings.bottom_ribbon_text }}
-    </div>
+    <div class="gg-ribbon">{{ section.settings.bottom_ribbon_text }}</div>
   {% endif %}
 </section>
 
@@ -66,16 +56,16 @@
   "settings": [
     { "type": "text", "id": "logo_text", "label": "Logo text (top-left)", "default": "TISSO VISON" },
     { "type": "text", "id": "top_message", "label": "Top center message", "default": "Find the ideal gift for your loved ones." },
-    { "type": "text", "id": "top_cta_text", "label": "Top-right button label", "default": "CHOOSE GIFT" },
+    { "type": "text", "id": "top_cta_text", "label": "Top-right button text", "default": "CHOOSE GIFT" },
     { "type": "url", "id": "top_cta_link", "label": "Top-right button link", "default": "/collections/all" },
-
-    { "type": "text", "id": "heading", "label": "Hero heading", "default": "The Gift Guide" },
-    { "type": "textarea", "id": "subheading", "label": "Hero subheading", "default": "Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season." },
-    { "type": "text", "id": "cta_text", "label": "Hero button label", "default": "SHOP NOW" },
-    { "type": "url", "id": "cta_link", "label": "Hero button link", "default": "/collections/all" },
 
     { "type": "image_picker", "id": "hero_image", "label": "Hero image (optional)" },
     { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text", "default": "Gift Guide hero artwork" },
+
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The Gift Guide" },
+    { "type": "textarea", "id": "subheading", "label": "Subheading", "default": "Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season." },
+    { "type": "text", "id": "cta_text", "label": "Main CTA text", "default": "SHOP NOW" },
+    { "type": "url", "id": "cta_link", "label": "Main CTA link", "default": "/collections/all" },
 
     { "type": "text", "id": "bottom_ribbon_text", "label": "Bottom ribbon text", "default": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL" }
   ],
@@ -84,4 +74,3 @@
   ]
 }
 {% endschema %}
-
