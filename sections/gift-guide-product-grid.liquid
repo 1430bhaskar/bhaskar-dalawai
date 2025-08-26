@@ -1,16 +1,17 @@
 {% comment %}
-Gift Guide — Product Grid
-Six product pickers (product_1..product_6) and upsell_product.
-Loads gift-guide.js (defer) and expects gift-guide.css loaded once (banner loads it).
+Gift Guide — Product Grid (image-only cards)
+• Six pickers + upsell handle (data attribute)
+• Grid shows ONLY the image with a small "+" badge (no title/price)
+• gift-guide.js handles modal, variants, and upsell
 {% endcomment %}
 
-{%- comment -%} don't include CSS again if banner already loads it. {%- endcomment -%}
 <script src="{{ 'gift-guide.js' | asset_url }}" defer="defer"></script>
 
 <section id="gift-guide-grid-{{ section.id }}" class="gift-guide-grid-section"
   data-money-format="{{ shop.money_format | escape }}"
   data-upsell-handle="{{ all_products[section.settings.upsell_product].handle | default: 'soft-winter-jacket' }}"
   aria-label="Gift Guide product grid">
+
   {% if section.settings.grid_heading != blank %}
     <h2 class="gg-grid__heading">{{ section.settings.grid_heading }}</h2>
   {% endif %}
@@ -23,12 +24,8 @@ Loads gift-guide.js (defer) and expects gift-guide.css loaded once (banner loads
         {% if prod %}
           <article class="gg-card" data-handle="{{ prod.handle }}" tabindex="0" role="button" aria-label="{{ prod.title }}">
             <div class="gg-card__image">
-              <img src="{{ prod.featured_image | img_url: '800x' }}" alt="{{ prod.featured_image.alt | default: prod.title | escape }}">
+              <img src="{{ prod.featured_image | img_url: '900x' }}" alt="{{ prod.featured_image.alt | default: prod.title | escape }}">
               <span class="gg-card__plus" aria-hidden="true">+</span>
-            </div>
-            <div class="gg-card__meta">
-              <span class="gg-card__title">{{ prod.title }}</span>
-              <span class="gg-card__price">{{ prod.price | money }}</span>
             </div>
           </article>
         {% else %}
@@ -53,16 +50,16 @@ Loads gift-guide.js (defer) and expects gift-guide.css loaded once (banner loads
 {
   "name": "Gift Guide — Product Grid",
   "settings": [
-    { "type": "text", "id": "grid_heading", "label": "Grid heading", "default": "Tisso vision in the wild" },
+    { "type": "text", "id": "grid_heading", "label": "Grid heading", "default": "Tisso vison in the wild" },
 
-    { "type": "product", "id": "product_1", "label": "Product 1" },
-    { "type": "product", "id": "product_2", "label": "Product 2" },
-    { "type": "product", "id": "product_3", "label": "Product 3" },
-    { "type": "product", "id": "product_4", "label": "Product 4" },
-    { "type": "product", "id": "product_5", "label": "Product 5" },
-    { "type": "product", "id": "product_6", "label": "Product 6" },
+    { "type": "product", "id": "product_1", "label": "Product 1", "default": "" },
+    { "type": "product", "id": "product_2", "label": "Product 2", "default": "" },
+    { "type": "product", "id": "product_3", "label": "Product 3", "default": "" },
+    { "type": "product", "id": "product_4", "label": "Product 4", "default": "" },
+    { "type": "product", "id": "product_5", "label": "Product 5", "default": "" },
+    { "type": "product", "id": "product_6", "label": "Product 6", "default": "" },
 
-    { "type": "product", "id": "upsell_product", "label": "Upsell product (Soft Winter Jacket)" }
+    { "type": "product", "id": "upsell_product", "label": "Upsell product (Soft Winter Jacket)", "default": "" }
   ],
   "presets": [
     { "name": "Gift Guide — Product Grid" }
