@@ -116,96 +116,121 @@
   }
 
   // --- UI Rendering ---
-  function renderProductInPopup(product) {
-    const body = $('.gg-modal__body', popup);
-    if (!body) return;
+function renderProductInPopup(product) {
+  const body = $('.gg-modal__body', popup);
+  if (!body) return;
 
-    // 1. Create the main layout for the popup content
-    const content = document.createElement('div');
-    content.className = 'modal-product';
-    content.innerHTML = `
-      <div class="left">
-        <img src="${product.featured_image}" alt="${product.title}">
-      </div>
-      <div class="right">
-        <h3 class="gg-p-title">${product.title}</h3>
-        <p class="gg-p-price" data-el="price"></p>
-        <div class="gg-variants" data-el="options"></div>
-        <button class="gg-add" data-el="atc">Add to Cart</button>
-        <p class="gg-msg" data-el="note"></p>
-      </div>
-    `;
-    body.appendChild(content);
+  // 1. Create the main layout for the popup content
+  const content = document.createElement('div');
+  content.className = 'modal-product';
+  // UPDATED: Single-column layout with image at the top
+  content.innerHTML = `
+    <img src="${product.featured_image}" alt="${product.title}" class="product-image">
+    <div class="right">
+      <h3 class="gg-p-title">${product.title}</h3>
+      <p class="gg-p-price" data-el="price"></p>
+      <div class="gg-variants" data-el="options"></div>
+      <button class="gg-add" data-el="atc">Add to Cart</button>
+      <p class="gg-msg" data-el="note"></p>
+    </div>
+  `;
+  body.appendChild(content);
 
-    // 2. Cache the elements we need to update
-    const elements = {
-      price: $('[data-el="price"]', body),
-      options: $('[data-el="options"]', body),
-      atc: $('[data-el="atc"]', body),
-      note: $('[data-el="note"]', body),
-    };
+  // 2. Cache the elements we need to update
+  const elements = {
+    price: $('[data-el="price"]', body),
+    options: $('[data-el="options"]', body),
+    atc: $('[data-el="atc"]', body),
+    note: $('[data-el="note"]', body),
+  };
 
-    // 3. Set default selections
-    selected.color = norm(product.options.find(o => o.name.toLowerCase().includes('color'))?.values[0]);
-    selected.size = normalizeSize(product.options.find(o => o.name.toLowerCase().includes('size'))?.values[0]);
+  // 3. Set default selections
+  selected.color = norm(product.options.find(o => o.name.toLowerCase().includes('color'))?.values[0]);
+  selected.size = normalizeSize(product.options.find(o => o.name.toLowerCase().includes('size'))?.values[0]);
 
-    // 4. Create and append option selectors (swatches, dropdowns)
-    product.options.forEach((opt, idx) => {
-      const optName = opt.name.toLowerCase();
-      const wrap = document.createElement('div');
-      wrap.className = 'gg-variant-row';
-      const label = document.createElement('label');
-      label.className = 'gg-variant-label';
-      label.textContent = opt.name;
-      wrap.appendChild(label);
+  // 4. Create and append option selectors
+  // NEW: Reordered to show Size first, then Color
+  const orderedOptions = [...product.options].sort((a, b) => {
+    if (a.name.toLowerCase().includes('size')) return -1;
+    if (b.name.toLowerCase().includes('size')) return 1;
+    return 0;
+  });
+  
+  orderedOptions.forEach((opt) => {
+    const optName = opt.name.toLowerCase();
+    const wrap = document.createElement('div');
+    wrap.className = 'gg-variant-row';
+    const label = document.createElement('label');
+    label.className = 'gg-variant-label';
+    label.textContent = opt.name;
+    wrap.appendChild(label);
 
-      if (optName.includes('color')) {
-        const optsContainer = document.createElement('div');
-        optsContainer.className = 'gg-opts';
-        opt.values.forEach(v => {
-          const b = document.createElement('button');
-          b.className = 'gg-swatch';
-          b.textContent = v;
-          if (norm(v) === selected.color) b.classList.add('active'); // Set default active
-          b.addEventListener('click', () => {
-            selected.color = norm(v);
-            $$('.gg-swatch', optsContainer).forEach(el => el.classList.remove('active'));
-            b.classList.add('active');
-            resolveVariant(product, elements);
-          });
-          optsContainer.appendChild(b);
-        });
-        wrap.appendChild(optsContainer);
-      } else if (optName.includes('size')) {
-        // Create the custom dropdown structure
-        const selectWrap = document.createElement('div');
-        selectWrap.className = 'gg-select-wrap';
+    if (optName.includes('color')) {
+      const optsContainer = document.createElement('div');
+      optsContainer.className = 'gg-opts';
+      opt.values.forEach(v => {
+        const b = document.createElement('button');
+        b.className = 'gg-swatch';
+        b.textContent = v;
         
-        const sel = document.createElement('select');
-        sel.className = 'gg-select';
-        opt.values.forEach(v => {
-          const o = document.createElement('option');
-          o.value = v;
-          o.textContent = v;
-          if (normalizeSize(v) === selected.size) o.selected = true; // Set default selected
-          sel.appendChild(o);
-        });
-        sel.addEventListener('change', e => {
-          selected.size = normalizeSize(e.target.value);
+        // Set initial active swatch
+        if (norm(v) === selected.color) {
+            b.classList.add('active');
+            b.style.borderLeftColor = norm(v); // Set initial color
+        }
+
+        // UPDATED: Event listener with dynamic color logic
+        b.addEventListener('click', () => {
+          selected.color = norm(v);
+          $$('.gg-swatch', optsContainer).forEach(el => {
+            el.classList.remove('active');
+            el.style.borderLeftColor = 'transparent'; // Reset all
+          });
+          b.classList.add('active');
+          b.style.borderLeftColor = norm(v); // Set specific color (e.g., 'blue', 'black')
           resolveVariant(product, elements);
         });
-        
-        selectWrap.innerHTML = '<span class="gg-caret">▼</span>'; // Custom caret
-        selectWrap.prepend(sel);
-        wrap.appendChild(selectWrap);
-      }
-      elements.options.appendChild(wrap);
-    });
+        optsContainer.appendChild(b);
+      });
+      wrap.appendChild(optsContainer);
 
-    // 5. Attach ATC listener and run initial variant resolution
-    elements.atc.addEventListener('click', handleAddToCart);
-    resolveVariant(product, elements);
-  }
+    } else if (optName.includes('size')) {
+      const selectWrap = document.createElement('div');
+      selectWrap.className = 'gg-select-wrap';
+      
+      const sel = document.createElement('select');
+      sel.className = 'gg-select';
+      // Add a placeholder option
+      const placeholder = document.createElement('option');
+      placeholder.textContent = "Choose your size";
+      placeholder.value = "";
+      placeholder.disabled = true;
+      if (!selected.size) placeholder.selected = true;
+      sel.appendChild(placeholder);
+      
+      opt.values.forEach(v => {
+        const o = document.createElement('option');
+        o.value = v;
+        o.textContent = v;
+        if (normalizeSize(v) === selected.size) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', e => {
+        selected.size = normalizeSize(e.target.value);
+        resolveVariant(product, elements);
+      });
+      
+      selectWrap.innerHTML = '<span class="gg-caret">▼</span>';
+      selectWrap.prepend(sel);
+      wrap.appendChild(selectWrap);
+    }
+    elements.options.appendChild(wrap);
+  });
+
+  // 5. Attach ATC listener and run initial variant resolution
+  elements.atc.addEventListener('click', handleAddToCart);
+  resolveVariant(product, elements);
+}
 
   // --- Initialization ---
   async function onGridClick(evt) {
