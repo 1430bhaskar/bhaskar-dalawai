@@ -108,12 +108,31 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
+/* show a CSS-based icon for the menu button (uses aria-expanded) */
+.gg-topbar__menu-btn { position: relative; }
+.gg-topbar__menu-btn .gg-hamburger { display: inline-block; } /* existing lines */
+.gg-topbar__menu-btn::after {
+  content: "☰";
+  font-size: 20px;
+  line-height: 1;
+  display: inline-block;
+  margin-left: -22px; /* hide conflict with .gg-hamburger if required */
+}
+.gg-topbar__menu-btn[aria-expanded="true"] .gg-hamburger { display: none; }
+.gg-topbar__menu-btn[aria-expanded="true"]::after { content: "✕"; }
+
 /* Mobile slide panel */
 .gg-topbar__panel {
-  display: block;
+  display: flex;
   background: #fff;
   border-bottom: 1px solid #eee;
   padding: 16px 20px;
+  position: sticky;
+  top: 3.5rem;
+  z-index: 45;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 .gg-topbar__panel[hidden] {
   display: none;
