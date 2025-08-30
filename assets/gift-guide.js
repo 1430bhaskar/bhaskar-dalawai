@@ -104,27 +104,13 @@
         }
       }
 
-      // ⭐️ START: Manual Cart UI Update Logic
-      const updatedCart = await fetch('/cart.js').then(r => r.json());
-      
-      // Update the cart count in the header
-      // ⚠️ IMPORTANT: Replace '.cart-count' with the selector your theme uses
-      const cartCountEl = document.querySelector('.cart-count, .js-cart-count'); 
-      if (cartCountEl) {
-        cartCountEl.textContent = updatedCart.item_count;
-      }
-
-      // Show the cart drawer/popup
-      // ⚠️ IMPORTANT: Replace '.cart-drawer' and 'is-active' with your theme's selectors
-      const cartDrawer = document.querySelector('.cart-drawer, .site-header-cart-drawer');
-      if (cartDrawer) {
-          cartDrawer.classList.add('is-active', 'is-visible'); 
-      }
-      // ⭐️ END: Manual Cart UI Update Logic
-
-      noteEl.textContent = 'Added to your cart!';
+      noteEl.textContent = 'Added to your cart! Reloading page...';
       noteEl.style.color = 'green';
-      setTimeout(closePopup, 1500);
+      
+      // ⭐️ Reload the page after a short delay
+      setTimeout(() => {
+          window.location.reload();
+      }, 1000);
 
     } catch (e) {
       noteEl.textContent = 'There was an error.';
