@@ -30,124 +30,108 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: variantId, quantity: qty })
-    }).then(r => r.json())
-      .then(data => {
-        refreshCartUI();
-        return data;
-      });
+    }).then(r => r.json());
   }
 
-  // NEW: Refreshes Shopify cart drawer / cart UI
-  function refreshCartUI() {
-    // If Dawn (or similar) is used, dispatch cart update event
-    document.dispatchEvent(new CustomEvent('cart:refresh'));
+  // --- Popup Control ---
+  function openPopup() {
+    popup.classList.remove('gg-is-hidden');
+    document.body.classList.add('gg-no-scroll'); // Prevents background scroll
+  }
 
-    // OR fallback: re-fetch cart and replace DOM
-    fetch('/cart.js')
-      .then(res => res.json())
-      .then(cart => {
-        const countEls = document.querySelectorAll('[data-cart-count]');
-        countEls.forEach(el => el.textContent = cart.item_count);
+  function closePopup() {
+    popup.classList.add('gg-is-hidden');
+    document.body.classList.remove('gg-no-scroll'); // Re-enables scroll
+  }
 
-        // Optional: if you have a cart drawer, trigger its open/refresh
-        if (window.renderCartItems) {
-          window.renderCartItems(cart.items); // your theme’s renderer
-        }
+  function resetPopup() {
+    selected = {};
+    selectedVariant = null;
+    const body = $('.gg-modal__body', popup);
+    if (body) body.innerHTML = ''; // Clear previous content
+  }
+
+  // --- Core Logic: Variant Resolution ---
+  function resolveVariant(product, elements) {
+    // Find the variant that matches all selected options
+    selectedVariant = product.variants.find(v => {
+      return v.options.every((val, i) => {
+        const optName = product.options[i].name.toLowerCase();
+        if (optName.includes('color')) return norm(val) === selected.color;
+        if (optName.includes('size')) return normalizeSize(val) === selected.size;
+        return true; // For options we don't handle, like 'Style'
       });
+    });
 
-
-    // --- Popup Control ---
-    function openPopup() {
-      popup.classList.remove('gg-is-hidden');
-      document.body.classList.add('gg-no-scroll'); // Prevents background scroll
+    // Update UI
+    if (selectedVariant) {
+      elements.price.textContent = `\$${(selectedVariant.price / 100).toFixed(2)}`;
+      elements.atc.disabled = !selectedVariant.available;
+      elements.atc.textContent = selectedVariant.available ? 'Add to Cart' : 'Sold Out';
+    } else {
+      elements.atc.disabled = true;
+      elements.atc.textContent = 'Unavailable';
     }
+    
+    // Check for upsell after variant is resolved
+    checkUpsell(elements.note);
+  }
 
-    function closePopup() {
-      popup.classList.add('gg-is-hidden');
-      document.body.classList.remove('gg-no-scroll'); // Re-enables scroll
+  // --- Core Logic: Upsell ---
+  function checkUpsell(noteElement) {
+    const isUpsell = norm(selected.color) === 'black' && normalizeSize(selected.size) === 'medium';
+    if (isUpsell && upsellProductHandle) {
+      noteElement.textContent = 'You get a free Soft Winter Jacket!';
+    } else {
+      noteElement.textContent = '';
     }
+  }
 
-    function resetPopup() {
-      selected = {};
-      selectedVariant = null;
-      const body = $('.gg-modal__body', popup);
-      if (body) body.innerHTML = ''; // Clear previous content
-    }
-
-    // --- Core Logic: Variant Resolution ---
-    function resolveVariant(product, elements) {
-      // Find the variant that matches all selected options
-      selectedVariant = product.variants.find(v => {
-        return v.options.every((val, i) => {
-          const optName = product.options[i].name.toLowerCase();
-          if (optName.includes('color')) return norm(val) === selected.color;
-          if (optName.includes('size')) return normalizeSize(val) === selected.size;
-          return true; // For options we don't handle, like 'Style'
-        });
-      });
-
-      // Update UI
-      if (selectedVariant) {
-        elements.price.textContent = `\$${(selectedVariant.price / 100).toFixed(2)}`;
-        elements.atc.disabled = !selectedVariant.available;
-        elements.atc.textContent = selectedVariant.available ? 'Add to Cart' : 'Sold Out';
-      } else {
-        elements.atc.disabled = true;
-        elements.atc.textContent = 'Unavailable';
-      }
-
-      // Check for upsell after variant is resolved
-      checkUpsell(elements.note);
-    }
-
-    // --- Core Logic: Upsell ---
-    function checkUpsell(noteElement) {
+  async function handleAddToCart() {
+    if (!selectedVariant) return;
+    
+    const noteEl = $('[data-el="note"]', popup);
+    try {
+      await addVariantToCart(selectedVariant.id, 1);
+      
       const isUpsell = norm(selected.color) === 'black' && normalizeSize(selected.size) === 'medium';
+      
       if (isUpsell && upsellProductHandle) {
-        noteElement.textContent = 'You get a free Soft Winter Jacket!';
-      } else {
-        noteElement.textContent = '';
-      }
-    }
-
-    async function handleAddToCart() {
-      if (!selectedVariant) return;
-
-      const noteEl = $('[data-el="note"]', popup);
-      try {
-        await addVariantToCart(selectedVariant.id, 1);
-
-        const isUpsell = norm(selected.color) === 'black' && normalizeSize(selected.size) === 'medium';
-
-        if (isUpsell && upsellProductHandle) {
-          const bonus = await fetchProductByHandle(upsellProductHandle);
-          const bonusVariant = bonus.variants.find(v => v.available) || bonus.variants[0];
-          if (bonusVariant) {
-            await addVariantToCart(bonusVariant.id, 1);
-          }
+        const bonus = await fetchProductByHandle(upsellProductHandle);
+        const bonusVariant = bonus.variants.find(v => v.available) || bonus.variants[0];
+        if (bonusVariant) {
+          await addVariantToCart(bonusVariant.id, 1);
         }
-
-        noteEl.textContent = 'Added to your cart!';
-        noteEl.style.color = 'green';
-        setTimeout(closePopup, 1500);
-
-      } catch (e) {
-        noteEl.textContent = 'There was an error.';
-        noteEl.style.color = 'red';
-        console.error(e);
       }
+
+      // ⭐️ This is the crucial line: Dispatch the custom event to update the cart UI.
+      // It fetches the latest cart data and sends it as part of the event detail.
+      document.dispatchEvent(new CustomEvent('shopify:cart:updated', {
+          bubbles: true,
+          detail: { cart: await fetch('/cart.js').then(r => r.json()) }
+      }));
+
+      noteEl.textContent = 'Added to your cart!';
+      noteEl.style.color = 'green';
+      setTimeout(closePopup, 1500);
+
+    } catch (e) {
+      noteEl.textContent = 'There was an error.';
+      noteEl.style.color = 'red';
+      console.error(e);
     }
+  }
 
-    // --- UI Rendering ---
-    function renderProductInPopup(product) {
-      const body = $('.gg-modal__body', popup);
-      if (!body) return;
+  // --- UI Rendering ---
+function renderProductInPopup(product) {
+  const body = $('.gg-modal__body', popup);
+  if (!body) return;
 
-      // 1. Create the main layout for the popup content
-      const content = document.createElement('div');
-      content.className = 'modal-product';
-      // UPDATED: Single-column layout with image at the top
-      content.innerHTML = `
+  // 1. Create the main layout for the popup content
+  const content = document.createElement('div');
+  content.className = 'modal-product';
+  // UPDATED: Single-column layout with image at the top
+  content.innerHTML = `
     <img src="${product.featured_image}" alt="${product.title}" class="product-image">
     <div class="right">
       <h3 class="gg-p-title">${product.title}</h3>
@@ -157,138 +141,138 @@
       <p class="gg-msg" data-el="note"></p>
     </div>
   `;
-      body.appendChild(content);
+  body.appendChild(content);
 
-      // 2. Cache the elements we need to update
-      const elements = {
-        price: $('[data-el="price"]', body),
-        options: $('[data-el="options"]', body),
-        atc: $('[data-el="atc"]', body),
-        note: $('[data-el="note"]', body),
-      };
+  // 2. Cache the elements we need to update
+  const elements = {
+    price: $('[data-el="price"]', body),
+    options: $('[data-el="options"]', body),
+    atc: $('[data-el="atc"]', body),
+    note: $('[data-el="note"]', body),
+  };
 
-      // 3. Set default selections
-      selected.color = norm(product.options.find(o => o.name.toLowerCase().includes('color'))?.values[0]);
-      selected.size = normalizeSize(product.options.find(o => o.name.toLowerCase().includes('size'))?.values[0]);
+  // 3. Set default selections
+  selected.color = norm(product.options.find(o => o.name.toLowerCase().includes('color'))?.values[0]);
+  selected.size = normalizeSize(product.options.find(o => o.name.toLowerCase().includes('size'))?.values[0]);
 
-      // 4. Create and append option selectors
-      // NEW: Reordered to show Size first, then Color
-      const orderedOptions = [...product.options].sort((a, b) => {
-        if (a.name.toLowerCase().includes('size')) return -1;
-        if (b.name.toLowerCase().includes('size')) return 1;
-        return 0;
-      });
+  // 4. Create and append option selectors
+  // NEW: Reordered to show Size first, then Color
+  const orderedOptions = [...product.options].sort((a, b) => {
+    if (a.name.toLowerCase().includes('size')) return -1;
+    if (b.name.toLowerCase().includes('size')) return 1;
+    return 0;
+  });
+  
+  orderedOptions.forEach((opt) => {
+    const optName = opt.name.toLowerCase();
+    const wrap = document.createElement('div');
+    wrap.className = 'gg-variant-row';
+    const label = document.createElement('label');
+    label.className = 'gg-variant-label';
+    label.textContent = opt.name;
+    wrap.appendChild(label);
 
-      orderedOptions.forEach((opt) => {
-        const optName = opt.name.toLowerCase();
-        const wrap = document.createElement('div');
-        wrap.className = 'gg-variant-row';
-        const label = document.createElement('label');
-        label.className = 'gg-variant-label';
-        label.textContent = opt.name;
-        wrap.appendChild(label);
-
-        if (optName.includes('color')) {
-          const optsContainer = document.createElement('div');
-          optsContainer.className = 'gg-opts';
-          opt.values.forEach(v => {
-            const b = document.createElement('button');
-            b.className = 'gg-swatch';
-            b.textContent = v;
-
-            // Set initial active swatch
-            if (norm(v) === selected.color) {
-              b.classList.add('active');
-              b.style.borderLeftColor = norm(v); // Set initial color
-            }
-
-            // UPDATED: Event listener with dynamic color logic
-            b.addEventListener('click', () => {
-              selected.color = norm(v);
-              $$('.gg-swatch', optsContainer).forEach(el => {
-                el.classList.remove('active');
-                el.style.borderLeftColor = 'transparent'; // Reset all
-              });
-              b.classList.add('active');
-              b.style.borderLeftColor = norm(v); // Set specific color (e.g., 'blue', 'black')
-              resolveVariant(product, elements);
-            });
-            optsContainer.appendChild(b);
-          });
-          wrap.appendChild(optsContainer);
-
-        } else if (optName.includes('size')) {
-          const selectWrap = document.createElement('div');
-          selectWrap.className = 'gg-select-wrap';
-
-          const sel = document.createElement('select');
-          sel.className = 'gg-select';
-          // Add a placeholder option
-          const placeholder = document.createElement('option');
-          placeholder.textContent = "Choose your size";
-          placeholder.value = "";
-          placeholder.disabled = true;
-          if (!selected.size) placeholder.selected = true;
-          sel.appendChild(placeholder);
-
-          opt.values.forEach(v => {
-            const o = document.createElement('option');
-            o.value = v;
-            o.textContent = v;
-            if (normalizeSize(v) === selected.size) o.selected = true;
-            sel.appendChild(o);
-          });
-          sel.addEventListener('change', e => {
-            selected.size = normalizeSize(e.target.value);
-            resolveVariant(product, elements);
-          });
-
-          selectWrap.innerHTML = '<span class="gg-caret">▼</span>';
-          selectWrap.prepend(sel);
-          wrap.appendChild(selectWrap);
+    if (optName.includes('color')) {
+      const optsContainer = document.createElement('div');
+      optsContainer.className = 'gg-opts';
+      opt.values.forEach(v => {
+        const b = document.createElement('button');
+        b.className = 'gg-swatch';
+        b.textContent = v;
+        
+        // Set initial active swatch
+        if (norm(v) === selected.color) {
+            b.classList.add('active');
+            b.style.borderLeftColor = norm(v); // Set initial color
         }
-        elements.options.appendChild(wrap);
+
+        // UPDATED: Event listener with dynamic color logic
+        b.addEventListener('click', () => {
+          selected.color = norm(v);
+          $$('.gg-swatch', optsContainer).forEach(el => {
+            el.classList.remove('active');
+            el.style.borderLeftColor = 'transparent'; // Reset all
+          });
+          b.classList.add('active');
+          b.style.borderLeftColor = norm(v); // Set specific color (e.g., 'blue', 'black')
+          resolveVariant(product, elements);
+        });
+        optsContainer.appendChild(b);
       });
+      wrap.appendChild(optsContainer);
 
-      // 5. Attach ATC listener and run initial variant resolution
-      elements.atc.addEventListener('click', handleAddToCart);
-      resolveVariant(product, elements);
+    } else if (optName.includes('size')) {
+      const selectWrap = document.createElement('div');
+      selectWrap.className = 'gg-select-wrap';
+      
+      const sel = document.createElement('select');
+      sel.className = 'gg-select';
+      // Add a placeholder option
+      const placeholder = document.createElement('option');
+      placeholder.textContent = "Choose your size";
+      placeholder.value = "";
+      placeholder.disabled = true;
+      if (!selected.size) placeholder.selected = true;
+      sel.appendChild(placeholder);
+      
+      opt.values.forEach(v => {
+        const o = document.createElement('option');
+        o.value = v;
+        o.textContent = v;
+        if (normalizeSize(v) === selected.size) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', e => {
+        selected.size = normalizeSize(e.target.value);
+        resolveVariant(product, elements);
+      });
+      
+      selectWrap.innerHTML = '<span class="gg-caret">▼</span>';
+      selectWrap.prepend(sel);
+      wrap.appendChild(selectWrap);
+    }
+    elements.options.appendChild(wrap);
+  });
+
+  // 5. Attach ATC listener and run initial variant resolution
+  elements.atc.addEventListener('click', handleAddToCart);
+  resolveVariant(product, elements);
+}
+
+  // --- Initialization ---
+  async function onGridClick(evt) {
+    const card = evt.target.closest(CARD_SELECTOR);
+    if (!card) return;
+
+    evt.preventDefault();
+    resetPopup();
+
+    try {
+      const handle = card.dataset.handle; // Corrected: Use data-handle
+      if (!handle) return;
+      const product = await fetchProductByHandle(handle);
+      renderProductInPopup(product);
+      openPopup();
+    } catch (err) {
+      console.error("Popup open failed:", err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    popup = $(POPUP_SELECTOR);
+    const grid = $(GRID_SELECTOR);
+    const gridSection = $(GRID_SECTION_SELECTOR);
+
+    if (!popup || !grid || !gridSection) {
+      console.error("Gift Guide elements not found.");
+      return;
     }
 
-    // --- Initialization ---
-    async function onGridClick(evt) {
-      const card = evt.target.closest(CARD_SELECTOR);
-      if (!card) return;
+    // Get the upsell handle from the section's data attribute
+    upsellProductHandle = gridSection.dataset.upsellHandle;
 
-      evt.preventDefault();
-      resetPopup();
+    grid.addEventListener('click', onGridClick);
+    $('.gg-modal__close', popup)?.addEventListener('click', closePopup);
+  });
 
-      try {
-        const handle = card.dataset.handle; // Corrected: Use data-handle
-        if (!handle) return;
-        const product = await fetchProductByHandle(handle);
-        renderProductInPopup(product);
-        openPopup();
-      } catch (err) {
-        console.error("Popup open failed:", err);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      popup = $(POPUP_SELECTOR);
-      const grid = $(GRID_SELECTOR);
-      const gridSection = $(GRID_SECTION_SELECTOR);
-
-      if (!popup || !grid || !gridSection) {
-        console.error("Gift Guide elements not found.");
-        return;
-      }
-
-      // Get the upsell handle from the section's data attribute
-      upsellProductHandle = gridSection.dataset.upsellHandle;
-
-      grid.addEventListener('click', onGridClick);
-      $('.gg-modal__close', popup)?.addEventListener('click', closePopup);
-    });
-
-  }) ();
+})();
