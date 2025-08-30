@@ -332,34 +332,45 @@
   };
 
   const wireGrid = () => {
-    const grid = $(GRID_SELECTOR);
-    if (!grid) return;
+  const grid = $(GRID_SELECTOR);
+  if (!grid) return;
 
-    grid.addEventListener('click', async (evt) => {
-      const card = evt.target.closest(CARD_SELECTOR);
-      if (!card) return;
+  grid.addEventListener('click', async (evt) => {
+    const card = evt.target.closest(CARD_SELECTOR) 
+              || evt.target.closest('a[href*="/products/"]'); 
+    if (!card) return;
 
-      evt.preventDefault();
-      resetState();
+    evt.preventDefault();
+    resetState();
 
-      try {
-        let product;
-        const json = card.getAttribute('data-product-json');
-        if (json) {
-          product = JSON.parse(json);
-        } else {
-          const handle = card.getAttribute('data-product-handle');
-          if (!handle) return;
-          product = await fetchProductByHandle(handle);
+    try {
+      let product;
+      const json = card.getAttribute('data-product-json');
+      if (json) {
+        product = JSON.parse(json);
+      } else {
+        // Extract handle: either data attribute or href
+        let handle = card.getAttribute('data-product-handle');
+        if (!handle) {
+          const link = card.getAttribute('href') 
+                    || (card.querySelector('a[href*="/products/"]')?.getAttribute('href'));
+          if (link) {
+            const match = link.match(/\/products\/([\w-]+)/);
+            if (match) handle = match[1];
+          }
         }
-        renderFromProduct(product);
-        openPopup();
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(err);
+        if (!handle) return;
+        product = await fetchProductByHandle(handle);
       }
-    });
-  };
+
+      renderFromProduct(product);
+      openPopup();
+    } catch (err) {
+      console.error("Popup open failed:", err);
+    }
+  });
+};
+
 
   // -------------------- INIT ----------------------------
   document.addEventListener('DOMContentLoaded', () => {
