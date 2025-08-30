@@ -112,7 +112,7 @@
 .gg-topbar__menu-btn { position: relative; }
 .gg-topbar__menu-btn .gg-hamburger { display: inline-block; } /* existing lines */
 .gg-topbar__menu-btn::after {
-  content: "☰";
+  /* content: "☰"; */
   font-size: 20px;
   line-height: 1;
   display: inline-block;

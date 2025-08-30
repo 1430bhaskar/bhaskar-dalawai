@@ -69,23 +69,7 @@ Gift Guide — Banner (Figma-tight)
   {% endif %}
 </section>
 
-<script>
-  // Tiny hamburger toggle for the top row (banner only)
-  (function(){
-    var btn = document.querySelector('#gift-guide-banner-{{ section.id }} .gg-topbar__menu-btn');
-    var panel = document.getElementById('gg-topbar-panel');
-    if (!btn || !panel) return;
-    btn.addEventListener('click', function () {
-      var open = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', String(!open));
-      if (open) {
-        panel.setAttribute('hidden','');
-      } else {
-        panel.removeAttribute('hidden');
-      }
-    });
-  })();
-</script>
+
 
 {% schema %}
 {
