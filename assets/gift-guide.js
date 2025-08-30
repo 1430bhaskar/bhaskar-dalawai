@@ -1,333 +1,213 @@
-/* gift-guide.js
-   - Modal product details + dynamic variants
-   - Add to cart via AJAX
-   - Special rule: if variant = Black + Medium → auto-add Soft Winter Jacket
-   - Global listener also checks cart for upsell
-   - Menu toggle (☰ ⇄ ✕)
-*/
+document.addEventListener("DOMContentLoaded", () => {
+  // -------------------------------
+  // MENU TOGGLE (Hamburger → X)
+  // -------------------------------
+  const menuBtn = document.querySelector(".gg-topbar__menu-btn");
+  const navMenu = document.querySelector(".gg-topbar__nav");
 
-(function () {
-  const SECTION = document.querySelector(".gift-guide-grid-section");
-  if (!SECTION) return;
+  if (menuBtn && navMenu) {
+    menuBtn.addEventListener("click", () => {
+      navMenu.classList.toggle("open");
+      menuBtn.classList.toggle("open");
 
-  const modal = document.getElementById("gg-modal");
-  const modalBody = modal?.querySelector(".gg-modal__body");
-  const closeBtn = modal?.querySelector(".gg-modal__close");
-  const UPSELL_PRODUCT_HANDLE =
-    SECTION.dataset.upsellHandle || "soft-winter-jacket";
-  const moneyFormat = SECTION.dataset.moneyFormat || "${{amount}}";
-
-  const $ = (sel, ctx = document) => ctx.querySelector(sel);
-  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
-
-  // -------------------- Format Money --------------------
-  function formatMoney(cents) {
-    if (cents == null) return "";
-    const value = (cents / 100).toFixed(2);
-    return moneyFormat.replace(/{{\s*amount\s*}}/, value);
+      // Update button text/icon
+      if (menuBtn.classList.contains("open")) {
+        menuBtn.textContent = "✕";
+      } else {
+        menuBtn.textContent = "☰";
+      }
+    });
   }
 
-  // -------------------- Global Cart Listener --------------------
-  document.body.addEventListener("click", (e) => {
-    if (
-      e.target.matches(
-        'form[action*="/cart/add"] [type="submit"], .add-to-cart'
-      )
-    ) {
-      setTimeout(checkAndAddUpsellFromCart, 500);
+  // -------------------------------
+  // PRODUCT MODAL POPUP
+  // -------------------------------
+  const modal = document.querySelector(".product-modal");
+  const modalContent = modal?.querySelector(".modal-content");
+  const closeBtn = modal?.querySelector(".close-btn");
+
+  // Open modal on product click
+  document.querySelectorAll(".product-card").forEach((card) => {
+    card.addEventListener("click", async () => {
+      const handle = card.dataset.handle;
+      if (!handle || !modal) return;
+
+      try {
+        const res = await fetch(`/products/${handle}.js`);
+        const product = await res.json();
+
+        renderProductModal(product);
+        modal.style.display = "block";
+      } catch (err) {
+        console.error("Error loading product:", err);
+      }
+    });
+  });
+
+  // Close modal
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      modal.style.display = "none";
+      modalContent.innerHTML = ""; // reset
+    });
+  }
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      modalContent.innerHTML = "";
     }
   });
 
-  function checkAndAddUpsellFromCart() {
-    fetch("/cart.js")
-      .then((res) => res.json())
-      .then((cart) => {
-        let hasTrigger = false;
-        let hasUpsell = false;
+  // -------------------------------
+  // Render Product Info in Modal
+  // -------------------------------
+  function renderProductModal(product) {
+    if (!modalContent) return;
 
-        cart.items.forEach((item) => {
-          const color =
-            item.options_with_values.find((o) => o.name === "Color")?.value?.toLowerCase() || "";
-          const size =
-            item.options_with_values.find((o) => o.name === "Size")?.value?.toLowerCase() || "";
-
-          if (color === "black" && size === "medium") hasTrigger = true;
-          if (item.handle === UPSELL_PRODUCT_HANDLE) hasUpsell = true;
-        });
-
-        if (hasTrigger && !hasUpsell) {
-          fetch(`/products/${UPSELL_PRODUCT_HANDLE}.js`)
-            .then((r) => r.json())
-            .then((up) => {
-              if (up?.variants?.[0]) {
-                return fetch("/cart/add.js", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: up.variants[0].id, quantity: 1 }),
-                });
-              }
-            })
-            .then(() =>
-              console.log("Upsell Soft Winter Jacket added automatically!")
-            )
-            .catch(() => console.warn("Upsell add failed"));
-        }
-      });
-  }
-
-  // -------------------- Menu Toggle --------------------
-  const menuBtn = document.querySelector(".gg-menu-toggle");
-  menuBtn?.addEventListener("click", function () {
-    this.classList.toggle("open");
-    this.innerHTML = this.classList.contains("open") ? "✕" : "☰";
-  });
-
-  // -------------------- Helpers --------------------
-  function escapeHtml(str) {
-    return !str
-      ? ""
-      : String(str).replace(/[&<>"']/g, (m) =>
-          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])
-        );
-  }
-  function textSlice(str, n) {
-    if (!str) return "";
-    const s = str.replace(/<[^>]*>/g, "");
-    return s.length > n ? s.slice(0, n) + "…" : s;
-  }
-  function uniqueValuesForOption(product, index) {
-    const key = "option" + (index + 1);
-    const vals = new Set();
-    product.variants.forEach((v) => vals.add(v[key]));
-    return Array.from(vals);
-  }
-  function getVariantByOptions(product, selected) {
-    const match = product.variants.find((v) =>
-      selected.every((val, idx) =>
-        val == null ? true : v["option" + (idx + 1)] === val
-      )
-    );
-    return match || product.variants[0];
-  }
-
-  // -------------------- Modal Controls --------------------
-  function openModal() {
-    if (!modal) return;
-    modal.classList.remove("gg-is-hidden");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-    setTimeout(() => closeBtn?.focus(), 0);
-  }
-
-  function closeModal() {
-    if (!modal) return;
-    modal.classList.add("gg-is-hidden");
-    modal.setAttribute("aria-hidden", "true");
-    if (modalBody) modalBody.innerHTML = "";
-    document.body.style.overflow = "";
-  }
-  closeBtn?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (!modal.classList.contains("gg-is-hidden") && e.key === "Escape") {
-      closeModal();
-    }
-  });
-
-  // -------------------- Load Product + Render --------------------
-  function loadProduct(handle) {
-    fetch(`/products/${handle}.js`)
-      .then((r) => r.json())
-      .then((product) => renderProduct(product))
-      .catch((err) => {
-        console.error(err);
-        alert("Could not load product. Try again.");
-      });
-  }
-
-  function renderProduct(product) {
-    const optionNames = product.options || [];
-    const optionValues = optionNames.map((_, i) =>
-      uniqueValuesForOption(product, i)
-    );
-    const selected = optionNames.map(
-      (_, i) => product.variants[0]["option" + (i + 1)] || null
-    );
-
-    const img =
-      product.featured_image || (product.images && product.images[0]) || "";
-    const priceNow = formatMoney(product.variants[0].price);
-
-    modalBody.innerHTML = `
-      <div class="modal-product">
-        <div class="left">
-          ${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(product.title)}">` : ""}
-        </div>
-        <div class="right">
-          <h2 class="gg-p-title">${escapeHtml(product.title)}</h2>
-          <div class="gg-p-price" id="gg-price">${priceNow}</div>
-          <div class="gg-p-desc">${escapeHtml(textSlice(product.description, 800))}</div>
-
-          <div class="gg-variants">
-            ${optionNames
-              .map((name, idx) => {
-                const vals = optionValues[idx];
-                return vals.length <= 6
-                  ? `<div class="gg-variant-row" data-idx="${idx}">
-                      <div class="gg-variant-label">${escapeHtml(name)}</div>
-                      <div class="gg-opts" data-option-index="${idx}">
-                        ${vals
-                          .map(
-                            (v) =>
-                              `<button class="gg-opt" type="button" data-idx="${idx}" data-value="${escapeHtml(
-                                v
-                              )}" aria-pressed="${v === selected[idx]}">${escapeHtml(v)}</button>`
-                          )
-                          .join("")}
-                      </div>
-                    </div>`
-                  : `<div class="gg-variant-row" data-idx="${idx}">
-                      <label class="gg-variant-label" for="gg-select-${idx}">${escapeHtml(name)}</label>
-                      <select id="gg-select-${idx}" class="gg-select" data-idx="${idx}">
-                        ${vals
-                          .map(
-                            (v) =>
-                              `<option value="${escapeHtml(v)}" ${
-                                v === selected[idx] ? "selected" : ""
-                              }>${escapeHtml(v)}</option>`
-                          )
-                          .join("")}
-                      </select>
-                    </div>`;
-              })
+    let variantOptionsHTML = "";
+    product.options.forEach((opt, optIndex) => {
+      variantOptionsHTML += `
+        <div class="variant-option">
+          <h4>${opt.name}</h4>
+          <div class="variant-values">
+            ${opt.values
+              .map(
+                (val) =>
+                  `<button class="variant-btn" data-opt-index="${optIndex}" data-value="${val}">${val}</button>`
+              )
               .join("")}
           </div>
+        </div>`;
+    });
 
-          <div>
-            <button class="add-to-cart gg-add" id="gg-add">ADD TO CART →</button>
-          </div>
-          <div id="gg-add-msg" class="gg-msg" role="status" aria-live="polite"></div>
-        </div>
-      </div>
+    modalContent.innerHTML = `
+      <h2>${product.title}</h2>
+      <p>${product.description}</p>
+      <p><strong>Price:</strong> ₹${(product.price / 100).toFixed(2)}</p>
+      ${variantOptionsHTML}
+      <button class="add-to-cart-btn">ADD TO CART</button>
+      <p class="cart-status"></p>
     `;
 
-    wireVariantUI(product, selected);
-    openModal();
-  }
+    const selectedOptions = new Array(product.options.length).fill(null);
 
-  // -------------------- Variant Selection & Add --------------------
-  function findActiveOptionDom(index) {
-    const btn = modalBody.querySelector(
-      `.gg-opts[data-option-index="${index}"] .gg-opt[aria-pressed="true"]`
-    );
-    if (btn) return btn.dataset.value;
-    const sel = modalBody.querySelector(`.gg-select[data-idx="${index}"]`);
-    return sel ? sel.value : null;
-  }
+    // Variant select logic
+    modalContent.querySelectorAll(".variant-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const optIndex = parseInt(btn.dataset.optIndex);
+        selectedOptions[optIndex] = btn.dataset.value;
 
-  function wireVariantUI(product, selected) {
-    const priceEl = modalBody.querySelector("#gg-price");
-    const addBtn = modalBody.querySelector("#gg-add");
-    const msg = modalBody.querySelector("#gg-add-msg");
+        // highlight selected
+        btn.parentElement
+          .querySelectorAll(".variant-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
 
-    function updatePriceUI() {
-      const variant = getVariantByOptions(product, selected);
-      if (variant) {
-        priceEl.textContent = formatMoney(variant.price);
-        addBtn.dataset.variantId = variant.id;
+    // Add to cart logic
+    modalContent.querySelector(".add-to-cart-btn").addEventListener("click", () => {
+      const matchedVariant = product.variants.find((v) =>
+        v.options.every((optVal, i) => selectedOptions[i] === optVal)
+      );
+
+      if (!matchedVariant) {
+        modalContent.querySelector(".cart-status").textContent =
+          "Please select all options!";
+        return;
       }
-    }
-    updatePriceUI();
 
-    // Buttons
-    modalBody.querySelectorAll(".gg-opt").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const idx = parseInt(this.dataset.idx, 10);
-        selected[idx] = this.dataset.value;
-        modalBody
-          .querySelectorAll(`.gg-opt[data-idx="${idx}"]`)
-          .forEach((b) => b.setAttribute("aria-pressed", "false"));
-        this.setAttribute("aria-pressed", "true");
-        updatePriceUI();
-      });
+      addToCart(matchedVariant.id, 1, product.title, matchedVariant.options);
     });
+  }
 
-    // Selects
-    modalBody.querySelectorAll(".gg-select").forEach((sel) => {
-      sel.addEventListener("change", function () {
-        const idx = parseInt(this.dataset.idx, 10);
-        selected[idx] = this.value;
-        updatePriceUI();
-      });
-    });
-
-    // Add to Cart
-    addBtn.addEventListener("click", function () {
-      const variantId = Number(addBtn.dataset.variantId);
-      if (!variantId) return;
-
-      addBtn.disabled = true;
-      msg.textContent = "Adding…";
-
-      fetch("/cart/add.js", {
+  // -------------------------------
+  // Add to Cart + Upsell
+  // -------------------------------
+  async function addToCart(variantId, qty, productTitle, selectedOptions) {
+    try {
+      await fetch("/cart/add.js", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: variantId, quantity: 1 }),
-      })
-        .then((r) => r.json())
-        .then(() => {
-          msg.textContent = "Added to cart!";
+        body: JSON.stringify({ id: variantId, quantity: qty }),
+      });
 
-          // Upsell rule
-          const colorIdx = (product.options || []).indexOf("Color");
-          const sizeIdx = (product.options || []).indexOf("Size");
-          const selectedColor =
-            colorIdx >= 0
-              ? selected[colorIdx] || findActiveOptionDom(colorIdx)
-              : "";
-          const selectedSize =
-            sizeIdx >= 0
-              ? selected[sizeIdx] || findActiveOptionDom(sizeIdx)
-              : "";
+      // Update UI instantly
+      await updateCartUI();
 
-          if (
-            (selectedColor || "").toLowerCase() === "black" &&
-            (selectedSize || "").toLowerCase() === "medium"
-          ) {
-            fetch(`/products/${UPSELL_PRODUCT_HANDLE}.js`)
-              .then((r) => r.json())
-              .then((up) => {
-                if (up?.variants?.[0]) {
-                  return fetch("/cart/add.js", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: up.variants[0].id, quantity: 1 }),
-                  });
-                }
-              })
-              .catch(() => console.warn("Upsell failed"));
-          }
+      document.querySelector(".cart-status").textContent = `${productTitle} added to cart!`;
 
-          setTimeout(closeModal, 900);
-        })
-        .catch(() => (msg.textContent = "Failed to add. Please try again."))
-        .finally(() => {
-          addBtn.disabled = false;
-        });
-    });
+      // UPSALE CHECK (Black + Medium)
+      if (
+        selectedOptions.includes("Black") &&
+        selectedOptions.includes("Medium")
+      ) {
+        addSoftWinterJacket();
+      }
+
+      setTimeout(() => {
+        document.querySelector(".product-modal").style.display = "none";
+        document.querySelector(".modal-content").innerHTML = "";
+      }, 1200);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+    }
   }
 
-  // -------------------- Attach to Cards --------------------
-  $$(".gg-card[data-handle]").forEach((card) => {
-    const open = () => loadProduct(card.dataset.handle);
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        open();
+  // -------------------------------
+  // Soft Winter Jacket Upsell
+  // -------------------------------
+  async function addSoftWinterJacket() {
+    try {
+      const res = await fetch("/products/soft-winter-jacket.js");
+      const jacket = await res.json();
+
+      if (jacket.variants && jacket.variants.length > 0) {
+        const firstVariantId = jacket.variants[0].id;
+
+        await fetch("/cart/add.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: firstVariantId, quantity: 1 }),
+        });
+
+        await updateCartUI();
+
+        console.log("Soft Winter Jacket auto-added!");
       }
-    });
-  });
-})();
+    } catch (err) {
+      console.error("Upsell failed:", err);
+    }
+  }
+
+  // -------------------------------
+  // Update Cart UI (Live without reload)
+  // -------------------------------
+  async function updateCartUI() {
+    try {
+      const res = await fetch("/cart.js");
+      const cart = await res.json();
+
+      // Example cart update: update cart count in header
+      const cartCountEls = document.querySelectorAll(".cart-count");
+      cartCountEls.forEach((el) => (el.textContent = cart.item_count));
+
+      // If you have a mini-cart drawer, update it here
+      const cartDrawer = document.querySelector(".mini-cart-items");
+      if (cartDrawer) {
+        cartDrawer.innerHTML = cart.items
+          .map(
+            (item) => `
+              <div class="mini-cart-item">
+                <span>${item.title}</span>
+                <span>Qty: ${item.quantity}</span>
+                <span>₹${(item.line_price / 100).toFixed(2)}</span>
+              </div>`
+          )
+          .join("");
+      }
+    } catch (err) {
+      console.error("Failed to update cart UI:", err);
+    }
+  }
+});
