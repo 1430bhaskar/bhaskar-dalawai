@@ -1,14 +1,321 @@
-/* ========== Gift Guide CSS (Updated) ========== */
+/* ========== Gift Guide CSS (Figma-tight) ========== */
 
 /* Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Lustria&display=swap");
 
-/* Base & Scaffolding (No major changes) */
-/* ... keep your existing styles for .gift-guide-banner, .gg-topbar, .gg-hero, etc. ... */
-/* ... The styles below are primarily for the MODAL POPUP ... */
+/* Base scope */
+.gift-guide-banner,
+.gift-guide-grid-section {
+  color: #111;
+}
+
+/* ---------- Shared bits ---------- */
+.gg-arrow {
+  margin-left: 8px;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+.gg-btn:hover .gg-arrow,
+.gg-topbar__cta:hover .gg-arrow,
+.gg-topbar__panel-cta:hover .gg-arrow {
+  transform: translateX(6px);
+}
+
+.gg-visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+/* ---------- Top bar ---------- */
+.gg-topbar {
+  font-family: "Jost", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    sans-serif;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto; /* [hamburger] [logo] [message] [CTA] */
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Hamburger (hidden on desktop) */
+.gg-topbar__menu-btn {
+  display: none;
+  background: none;
+  border: 0;
+  padding: 8px;
+  margin: -8px;
+  cursor: pointer;
+}
+.gg-hamburger,
+.gg-hamburger:before,
+.gg-hamburger:after {
+  content: "";
+  display: block;
+  height: 2px;
+  width: 22px;
+  background: #111;
+  border-radius: 2px;
+  position: relative;
+}
+.gg-hamburger:before {
+  top: -6px;
+  position: relative;
+}
+.gg-hamburger:after {
+  top: 4px;
+  position: relative;
+}
+
+.gg-topbar__logo {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+}
+.gg-topbar__center {
+  justify-self: center;
+  font-size: 17px;
+  text-align: center;
+  color: #111;
+}
+.gg-topbar__cta,
+.gg-topbar__panel-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 22px;
+  background: #fff544;
+  color: #111;
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 0px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  text-transform: uppercase;
+  font-size: 16px;
+  line-height: 20.5px;
+}
+.gg-topbar__cta:hover,
+.gg-topbar__panel-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* show a CSS-based icon for the menu button (uses aria-expanded) */
+.gg-topbar__menu-btn {
+  position: relative;
+}
+.gg-topbar__menu-btn .gg-hamburger {
+  display: inline-block;
+} /* existing lines */
+.gg-topbar__menu-btn::after {
+  /* content: "☰"; */
+  font-size: 20px;
+  line-height: 1;
+  display: inline-block;
+  margin-left: -22px; /* hide conflict with .gg-hamburger if required */
+}
+.gg-topbar__menu-btn[aria-expanded="true"] .gg-hamburger {
+  display: none;
+}
+.gg-topbar__menu-btn[aria-expanded="true"]::after {
+  content: "✕";
+}
+
+/* Mobile slide panel */
+.gg-topbar__panel {
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding: 16px 20px;
+  position: sticky;
+  top: 3.5rem;
+  z-index: 45;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.gg-topbar__panel[hidden] {
+  display: none;
+}
+.gg-topbar__panel-text {
+  margin: 0 0 12px;
+  text-align: center;
+  font-family: "Jost", sans-serif;
+}
+
+/* ---------- Hero ---------- */
+.gg-hero {
+  /* full-bleed background image controlled via --gg-hero-bg */
+  background-image: var(--gg-hero-bg, none);
+  position: relative;
+  background-size: cover;
+  width: 100%;
+  min-height: 600px;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gg-hero__content {
+  max-width: 700px;
+  /* padding: 56px 6vw 60px; */
+  font-family: "Jost", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    sans-serif;
+  display: inline-block;
+  padding: 16px 24px;
+  display: inline-block;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.92);
+}
+@media (max-width: 767px) {
+  .gg-hero__title,
+  .gg-hero__subtitle {
+    background: #fff;
+    display: inline-block;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+  }
+  .gg-hero__cta {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 0; /* remove radius */
+  }
+}
+.gg-hero__title {
+  margin: 0 0 16px;
+  font-family: "Jost", sans-serif;
+  font-weight: 500;
+  font-size: 70px;
+  line-height: 100%;
+}
+.gg-hero__subtitle {
+  color: #111;
+  margin: 0 0 26px;
+  max-width: 540px;
+  font-family: "Jost", sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 140%;
+}
+.gg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  background: #000;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 0px;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-family: "Jost", sans-serif;
+  font-size: 16px;
+  line-height: 20.5px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease, color 0.18s ease;
+}
+.gg-btn:hover {
+  background: #fff544;
+  color: #111;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* ---------- Ribbon ---------- */
+.gg-ribbon {
+  text-align: center;
+  padding: 12px 6vw;
+  border-top: 1px solid #eee;
+  background: #f5f5f5;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: "Jost", sans-serif;
+}
+
+/* ---------- Grid ---------- */
+.gg-grid__heading {
+  max-width: 1200px;
+  margin: 20px auto 16px;
+  padding: 0 6vw;
+  font-size: 24px;
+  font-weight: 400;
+  font-family: "Lustria", serif;
+}
+.gg-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 6vw 80px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+.gg-card {
+  background: #fff;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+.gg-card__image {
+  position: relative;
+  aspect-ratio: 1/1;
+}
+.gg-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+.gg-card:hover .gg-card__image img {
+  transform: scale(1.04);
+}
+
+/* small plus badge like Figma */
+.gg-card__plus {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  line-height: 1;
+  font-size: 16px;
+}
 
 .gg-no-scroll {
   overflow: hidden;
+}
+/* Placeholders */
+.gg-card--placeholder,
+.gg-card--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1/1;
+  background: #fafafa;
+  color: #aaa;
+  border: 1px dashed #e5e5e5;
 }
 
 /* ---------- Modal ---------- */
@@ -18,230 +325,348 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.75);
   z-index: 120;
   padding: 20px;
 }
-
 .gg-modal.gg-is-hidden {
   display: none;
 }
-
 .gg-modal__dialog {
   background: #fff;
-  width: min(95vw, 420px); /* Adjusted width */
+  width: min(92vw, 580px);
   border-radius: 0px;
-  padding: 24px; /* Adjusted padding */
+  padding: 18px 18px 22px;
   position: relative;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  animation: gg-pop 0.2s ease-out;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: gg-pop 0.18s ease-out;
 }
 
 @keyframes gg-pop {
   from {
-    transform: scale(0.95);
-    opacity: 0;
+    transform: translateY(6px);
+    opacity: 0.85;
   }
   to {
-    transform: scale(1);
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
 .gg-modal__close {
   position: absolute;
-  right: 16px;
-  top: 16px;
+  right: 12px;
+  top: 10px;
   border: none;
   background: none;
-  font-size: 28px;
+  font-size: 26px;
   cursor: pointer;
   line-height: 1;
-  font-weight: 300;
-  color: #000;
 }
 
-/* --- Modal Content Layout (Updated) --- */
 .modal-product {
-  display: flex; /* Changed from grid */
-  flex-direction: column;
-  gap: 20px; /* Space between all elements */
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 460px) {
+  .modal-product {
+    grid-template-columns: 1fr;
+  }
 }
 
-.modal-product .product-image {
+.modal-product .left img {
   width: 100%;
   height: auto;
+  border-radius: 0px;
   display: block;
 }
-
 .modal-product .right {
-  display: flex;
-  flex-direction: column;
-  gap: 16px; /* Space between text/option elements */
+  min-width: 0;
 }
-
 .gg-p-title {
-  margin: 0;
+  margin: 0 0 6px;
   font-family: "Jost", sans-serif;
-  font-weight: 500;
-  font-size: 28px;
-  line-height: 1.2;
-}
-
-.gg-p-price {
-  margin: -10px 0 0; /* Pulls price closer to title */
-  font-family: "Jost", sans-serif;
+  font-weight: 600;
   font-size: 20px;
-  font-weight: 400;
+}
+.gg-p-price {
+  margin: 0 0 10px;
+  font-family: "Jost", sans-serif;
+}
+.gg-p-desc {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #000;
+  font-family: "Jost", sans-serif;
 }
 
 .gg-variants {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
-
 .gg-variant-row {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+}
+.gg-variant-label {
+  font-size: 14px;
+  font-family: "Jost", sans-serif;
+}
+.gg-opts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.gg-opt {
+  padding: 10px 14px;
+  border-radius: 0px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-family: "Jost", sans-serif;
+}
+.gg-opt[aria-pressed="true"] {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+/* Popup container */
+#gift-guide-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+#gift-guide-popup.open {
+  display: flex;
 }
 
-.gg-variant-label {
-  font-size: 16px;
-  font-family: "Jost", sans-serif;
+#gift-guide-popup .gg-box {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.gg-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+/* Title + price */
+.gg-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.gg-price {
+  font-size: 1rem;
   font-weight: 500;
   color: #333;
 }
 
-/* --- Color Swatches (Updated) --- */
-.gg-opts {
-  display: flex;
-  flex-direction: column; /* Stack vertically */
-  gap: 0; /* No gap needed, border handles separation */
+/* Options */
+.gg-opt {
+  margin: 1rem 0;
+}
+.gg-opt label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
+/* Color swatches */
 .gg-swatch {
   display: block;
   width: 100%;
-  padding: 12px 16px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.4rem;
   text-align: left;
-  border: 1px solid #ccc;
-  border-left: 5px solid transparent; /* Base for active state */
-  background: #fff;
+  border: 1px solid #ddd;
+  border-left: 6px solid transparent;
+  background: #fafafa;
   cursor: pointer;
-  font-family: "Jost", sans-serif;
-  font-size: 16px;
   transition: all 0.2s;
-  margin-top: -1px; /* Overlap borders */
 }
-.gg-opts > .gg-swatch:first-child {
-  margin-top: 0;
-}
-
 .gg-swatch:hover {
-  background: #f7f7f7;
-  border-color: #999;
+  background: #f0f0f0;
 }
-
 .gg-swatch.active {
-  background: #fff;
+  border-left-color: #000;
+  background: #f9f9f9;
   font-weight: 600;
-  border-color: #000;
-  /* border-left-color is set dynamically by JS */
 }
 
-/* --- Size Dropdown (Updated) --- */
+/* Size dropdown */
+.gg-size-select {
+  appearance: none;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff
+    url("data:image/svg+xml;utf8,<svg fill='none' stroke='%23000' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M6 9l6 6 6-6'></path></svg>")
+    no-repeat right 0.8rem center/16px 16px;
+}
+
+/* ATC button */
+.gg-atc {
+  display: block;
+  width: 100%;
+  padding: 0.8rem;
+  background: #000;
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.gg-atc:hover {
+  background: #333;
+}
+
+/* Note */
+[data-el="note"] {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: green;
+}
+
+.gg-msg {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #6b6b6b;
+}
+/* .gg-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 0px;
+  background: #fff;
+  font-family: "Jost", sans-serif;
+} */
 .gg-select-wrap {
   position: relative;
-  border: 1px solid #000; /* Border on the wrapper */
-  display: flex;
 }
-
 .gg-select {
   appearance: none;
   width: 100%;
-  height: 48px;
-  border: none; /* No border on the select itself */
-  border-radius: 0;
-  padding: 0 16px;
-  font-size: 16px;
-  background: transparent;
+  height: 44px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0 40px 0 12px;
+  font-size: 14px;
+  background: #fff;
   cursor: pointer;
   font-family: "Jost", sans-serif;
-  flex-grow: 1;
 }
-
 .gg-select:focus {
-  outline: none;
+  outline: 2px solid #000;
 }
-
 .gg-caret {
-  position: relative; /* Changed from absolute */
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   pointer-events: none;
   font-size: 16px;
-  color: #000;
-  width: 48px; /* Square box for the arrow */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-left: 1px solid #000; /* Vertical line separator */
-  flex-shrink: 0;
+  color: #555;
 }
 
-/* --- Add to Cart Button (Updated) --- */
+.add-to-cart,
 .gg-add {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   padding: 14px 16px;
   margin-top: 10px;
   background: #000;
   color: #fff;
   text-decoration: none;
-  border: 1px solid #000;
   border-radius: 0px;
   cursor: pointer;
   text-transform: uppercase;
   font-family: "Jost", sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  transition: background 0.2s, color 0.2s;
 }
-
-.gg-add::after {
-  content: '→';
-  font-size: 20px;
-  transition: transform 0.2s;
-}
-
+.add-to-cart:hover,
 .gg-add:hover {
-  background: #fff;
-  color: #000;
+  background: #111;
 }
-
-.gg-add:hover::after {
-  transform: translateX(5px);
-}
-
-.gg-add:disabled {
-  background: #888;
-  border-color: #888;
-  cursor: not-allowed;
-  color: #eee;
-}
-.gg-add:disabled:hover {
-  color: #eee;
-}
-.gg-add:disabled::after {
-  transform: none;
-}
-
 .gg-msg {
-  margin-top: 0;
-  font-size: 14px;
+  margin-top: 8px;
+  font-size: 13px;
   font-family: "Jost", sans-serif;
-  text-align: center;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .gg-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .gg-hero {
+    min-height: 480px;
+  }
+}
+
+/* mobile: 2 cards per row + centered hero text + topbar layout change */
+@media (max-width: 640px) {
+  .gg-topbar {
+    grid-template-columns: auto 1fr auto;
+  }
+  .gg-topbar__menu-btn {
+    display: block;
+  }
+  .gg-topbar__logo {
+    justify-self: center;
+  }
+  .gg-topbar__center,
+  .gg-topbar__cta {
+    display: none;
+  }
+
+  .gg-hero {
+    align-items: center;
+  }
+  .gg-hero__content {
+    text-align: center;
+    padding: 28px 5vw 36px;
+  }
+  .gg-hero__title {
+    font-size: 40px;
+  }
+  .gg-btn {
+    margin: 8px auto 0;
+  }
+
+  .gg-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 10px 4vw 60px;
+  }
+}
+@media (max-width: 767px) {
+  .gg-mobile-menu .gg-topbar__cta,
+  .gg-mobile-menu .gg-topbar__center {
+    text-align: center;
+    display: block;
+    margin: 12px auto;
+  }
 }
