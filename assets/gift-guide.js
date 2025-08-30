@@ -1,31 +1,35 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const menuBtn = document.querySelector(".gg-topbar__menu-btn");
-  const navMenu = document.querySelector(".gg-topbar__nav");
+  console.log("gift-guide.js loaded");
 
-  // ---------------- MENU TOGGLE ----------------
-  if (menuBtn) {
+  // ---------------- MENU TOGGLE (aria only, CSS handles visuals) ----------------
+  const menuBtn = document.querySelector(".gg-topbar__menu-btn");
+  const navPanel = document.getElementById("gg-topbar-panel");
+
+  if (menuBtn && navPanel) {
     menuBtn.addEventListener("click", () => {
-      const isOpen = navMenu.classList.toggle("open");
-      document.body.classList.toggle("menu-open", isOpen);
-      menuBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      const expanded = menuBtn.getAttribute("aria-expanded") === "true";
+      menuBtn.setAttribute("aria-expanded", expanded ? "false" : "true");
+      navPanel.hidden = expanded;
     });
   }
 
-  // ---------------- POPUP ----------------
-  const popup = document.querySelector(".gg-popup");
-  const popupContent = document.querySelector(".gg-popup__content");
-  const closeBtn = document.querySelector(".gg-popup__close");
+  // ---------------- MODAL ----------------
+  const modal = document.getElementById("gg-modal");
+  const modalBody = modal?.querySelector(".gg-modal__body");
+  const modalClose = modal?.querySelector(".gg-modal__close");
 
-  document.querySelectorAll(".gg-product-card__plus").forEach((plusBtn) => {
-    plusBtn.addEventListener("click", async () => {
-      const handle = plusBtn.dataset.handle;
+  document.querySelectorAll(".gg-card__plus").forEach((plusBtn) => {
+    plusBtn.addEventListener("click", async (e) => {
+      const card = e.target.closest(".gg-card");
+      const handle = card.dataset.handle;
       await loadProductPopup(handle);
     });
   });
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      popup.classList.remove("open");
+  if (modalClose) {
+    modalClose.addEventListener("click", () => {
+      modal.classList.add("gg-is-hidden");
+      modal.setAttribute("aria-hidden", "true");
     });
   }
 
@@ -35,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!res.ok) throw new Error("Could not load product");
       const product = await res.json();
 
-      popupContent.innerHTML = `
+      modalBody.innerHTML = `
         <h2>${product.title}</h2>
         <p>${(product.price / 100).toFixed(2)} ${Shopify.currency.active}</p>
         <p>${product.description || ""}</p>
@@ -45,18 +49,20 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
       `;
 
-      popup.classList.add("open");
+      modal.classList.remove("gg-is-hidden");
+      modal.setAttribute("aria-hidden", "false");
 
-      const addBtn = popupContent.querySelector(".gg-add-to-cart");
+      const addBtn = modalBody.querySelector(".gg-add-to-cart");
       addBtn.addEventListener("click", async () => {
-        const variantSelect = popupContent.querySelector("#variant-select");
+        const variantSelect = modalBody.querySelector("#variant-select");
         const variantId = variantSelect ? variantSelect.value : addBtn.dataset.id;
         await addToCart(variantId, 1);
       });
     } catch (err) {
       console.error(err);
-      popupContent.innerHTML = `<p>Could not load product. Try again.</p>`;
-      popup.classList.add("open");
+      modalBody.innerHTML = `<p>Could not load product. Try again.</p>`;
+      modal.classList.remove("gg-is-hidden");
+      modal.setAttribute("aria-hidden", "false");
     }
   }
 
@@ -95,8 +101,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const addedItem = cartData.items.find((i) => i.variant_id == variantId);
 
       if (addedItem) {
-        const color = addedItem.options_with_values.find((o) => o.name.toLowerCase() === "color")?.value;
-        const size = addedItem.options_with_values.find((o) => o.name.toLowerCase() === "size")?.value;
+        const color = addedItem.options_with_values.find(
+          (o) => o.name.toLowerCase() === "color"
+        )?.value;
+        const size = addedItem.options_with_values.find(
+          (o) => o.name.toLowerCase() === "size"
+        )?.value;
 
         if (
           color &&
@@ -104,7 +114,12 @@ document.addEventListener("DOMContentLoaded", () => {
           color.trim().toLowerCase() === "black" &&
           size.trim().toLowerCase() === "medium"
         ) {
-          await addUpsellIfMissing("soft-winter-jacket");
+          const upsellHandle =
+            document
+              .getElementById("gift-guide-grid-anchor")
+              .closest("section")
+              ?.dataset.upsellHandle || "soft-winter-jacket";
+          await addUpsellIfMissing(upsellHandle);
         }
       }
     } catch (err) {
@@ -142,8 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const cart = await res.json();
       const cartCountEls = document.querySelectorAll(".cart-count");
       cartCountEls.forEach((el) => (el.textContent = cart.item_count));
-
-      // If you have a cart drawer, re-render it here with cart.items
+      // 🔔 If you have a cart drawer, re-render it here
     } catch (err) {
       console.error("Cart refresh error:", err);
     }
