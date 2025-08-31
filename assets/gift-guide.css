@@ -158,13 +158,12 @@
   position: relative;
   background-size: cover;
   width: 100%;
-  min-height: 600px;
+  min-height: 780px;
   background-position: center;
-  background-repeat: no-repeat;
+  background-repeat:repeat-x ;
   min-height: 560px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: end;
 }
 .gg-hero__content {
   max-width: 700px;
@@ -172,19 +171,27 @@
   font-family: "Jost", system-ui, -apple-system, Segoe UI, Roboto, Arial,
     sans-serif;
   display: inline-block;
-  padding: 16px 24px;
+  padding:4rem 5rem;
   display: inline-block;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.92);
+  text-align: left;
+  align-items: flex-start;
+  background: #fff;
 }
 @media (max-width: 767px) {
-  .gg-hero__title,
-  .gg-hero__subtitle {
+  .gg-hero__title {
     background: #fff;
     display: inline-block;
-    padding: 8px 12px;
-    margin-bottom: 12px;
+    padding:0px;
+    margin: 0px;
   }
+
+  .gg-hero__subtitle{
+    margin-bottom: 13rem;
+    background: #fff;
+    display: inline-block;
+    padding:0px;
+  }
+
   .gg-hero__cta {
     position: absolute;
     bottom: 20px;
@@ -195,7 +202,7 @@
   }
 }
 .gg-hero__title {
-  margin: 0 0 16px;
+  margin: 0 0 2.5rem;
   font-family: "Jost", sans-serif;
   font-weight: 500;
   font-size: 70px;
@@ -203,7 +210,7 @@
 }
 .gg-hero__subtitle {
   color: #111;
-  margin: 0 0 26px;
+  margin: 0 0 2.5rem;
   max-width: 540px;
   font-family: "Jost", sans-serif;
   font-weight: 400;
@@ -214,7 +221,7 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 22px;
+  padding: 14px 30px;
   background: #000;
   color: #fff;
   text-decoration: none;
@@ -636,6 +643,7 @@
   }
   .gg-topbar__logo {
     justify-self: center;
+    font-size: 1.5rem;
   }
   .gg-topbar__center,
   .gg-topbar__cta {
@@ -647,10 +655,13 @@
   }
   .gg-hero__content {
     text-align: center;
-    padding: 28px 5vw 36px;
+    padding: 0px;
+    background-color: transparent;
+    justify-content: flex-start;
   }
   .gg-hero__title {
-    font-size: 40px;
+    font-size: 34px;
+    padding: 3rem 0rem 0rem;
   }
   .gg-btn {
     margin: 8px auto 0;
