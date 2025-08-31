@@ -50,8 +50,8 @@
   display: none;
   background: none;
   border: 0;
-  padding: 8px;
-  margin: -8px;
+  padding: 0px 10px;
+  margin: 0px;
   cursor: pointer;
 }
 .gg-hamburger,
@@ -59,19 +59,12 @@
 .gg-hamburger:after {
   content: "";
   display: block;
-  height: 2px;
-  width: 22px;
-  background: #111;
-  border-radius: 2px;
   position: relative;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
-.gg-hamburger:before {
-  top: -6px;
-  position: relative;
-}
-.gg-hamburger:after {
-  top: 4px;
-  position: relative;
+.gg-hamburger:before{
+  content: "\2630";
 }
 
 .gg-topbar__logo {
@@ -120,7 +113,7 @@
   font-size: 20px;
   line-height: 1;
   display: inline-block;
-  margin-left: -22px; /* hide conflict with .gg-hamburger if required */
+  margin: 0px; /* hide conflict with .gg-hamburger if required */
 }
 .gg-topbar__menu-btn[aria-expanded="true"] .gg-hamburger {
   display: none;
@@ -186,10 +179,11 @@
   }
 
   .gg-hero__subtitle{
-    margin-bottom: 13rem;
+    margin-bottom: 11rem !important;
     background: #fff;
     display: inline-block;
-    padding:0px;
+    padding: 2rem;
+    border: 2px solid white;
   }
 
   .gg-hero__cta {
@@ -643,7 +637,8 @@
   }
   .gg-topbar__logo {
     justify-self: center;
-    font-size: 1.5rem;
+    font-size: 2rem;
+    font-weight: 500;
   }
   .gg-topbar__center,
   .gg-topbar__cta {
@@ -662,6 +657,7 @@
   .gg-hero__title {
     font-size: 34px;
     padding: 3rem 0rem 0rem;
+    border: 2px solid white;
   }
   .gg-btn {
     margin: 8px auto 0;
