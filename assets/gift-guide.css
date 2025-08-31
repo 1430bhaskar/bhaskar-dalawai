@@ -61,10 +61,11 @@
   display: block;
   position: relative;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 500;
 }
 .gg-hamburger:before {
   content: "\2630";
+  font-weight: 500;
 }
 
 .gg-topbar__logo {
@@ -110,7 +111,7 @@
 } /* existing lines */
 .gg-topbar__menu-btn::after {
   /* content: "☰"; */
-  font-size: 20px;
+  font-size: 1.5rem;
   line-height: 1;
   display: inline-block;
   margin: 0px; /* hide conflict with .gg-hamburger if required */
