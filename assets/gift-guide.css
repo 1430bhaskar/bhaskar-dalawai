@@ -63,7 +63,7 @@
   font-size: 1.5rem;
   font-weight: bold;
 }
-.gg-hamburger:before{
+.gg-hamburger:before {
   content: "\2630";
 }
 
@@ -153,18 +153,17 @@
   width: 100%;
   min-height: 780px;
   background-position: center;
-  background-repeat:repeat-x ;
+  background-repeat: repeat-x;
   min-height: 560px;
   display: flex;
   align-items: end;
 }
 .gg-hero__content {
   max-width: 700px;
-  /* padding: 56px 6vw 60px; */
   font-family: "Jost", system-ui, -apple-system, Segoe UI, Roboto, Arial,
     sans-serif;
   display: inline-block;
-  padding:4rem 5rem;
+  padding: 4rem 5rem;
   display: inline-block;
   text-align: left;
   align-items: flex-start;
@@ -174,11 +173,11 @@
   .gg-hero__title {
     background: #fff;
     display: inline-block;
-    padding:0px;
+    padding: 0px;
     margin: 0px;
   }
 
-  .gg-hero__subtitle{
+  .gg-hero__subtitle {
     margin-bottom: 11rem !important;
     background: #fff;
     display: inline-block;
@@ -649,15 +648,20 @@
     align-items: center;
   }
   .gg-hero__content {
+    place-self: baseline;
     text-align: center;
-    padding: 0px;
+    padding: 0;
     background-color: transparent;
+    display: flex;
     justify-content: flex-start;
+    flex-direction: column;
+    align-items: normal;
   }
   .gg-hero__title {
     font-size: 34px;
     padding: 3rem 0rem 0rem;
     border: 2px solid white;
+    margin: 0px;
   }
   .gg-btn {
     margin: 8px auto 0;
