@@ -247,16 +247,8 @@
 }
 
 /* ---------- Grid ---------- */
-.gg-grid__heading {
-  max-width: 1200px;
-  margin: 20px auto 16px;
-  padding: 0 6vw;
-  font-size: 24px;
-  font-weight: 400;
-  font-family: "Lustria", serif;
-}
 .gg-grid {
-  max-width: 1200px;
+  max-width: 1750px;
   margin: 0 auto;
   padding: 8px 6vw 80px;
   display: grid;
@@ -428,7 +420,10 @@
 }
 .gg-opts {
   display: flex;
-  gap: 10px;
+      border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+}
 }
 .gg-opt {
   padding: 10px 14px;
@@ -511,20 +506,20 @@
   cursor: pointer;
   transition: all 0.2s;
   font-size: 18px;
+      margin: 0;
+      border-right: 1px solid black;
 }
 .gg-swatch:hover {
   background: #f0f0f0;
 }
 .gg-swatch.active {
   border-left-color: #000;
-  background: #f9f9f9;
+  background: #f0f0f0;
   font-weight: 600;
-  border-top: 1px solid;
-  border-bottom: 1px solid;
-  border-right: 1px solid;
   font-family: "Jost", sans-serif;
   font-size: 18px;
-  background: #fff;
+      margin: 0;
+          border-right: 1px solid #000;
 }
 
 /* Size dropdown */
@@ -612,7 +607,7 @@
   font-size: 16px;
   color: #000;
   border-left: 1px solid black;
-  padding: 0px 0px 0px 20px;
+  padding: 0px 0px 0px 15px;
   pointer-events: none;
 }
 
@@ -732,6 +727,13 @@
   font-weight: 400;
   font-style: normal;
   font-size: 36px;
-  margin-bottom: 2rem;
+  margin-bottom: 0px;
   text-align: center;
+  padding: 3vw 4vw 1vw;
+  max-width: 1750px;
+}
+
+.gift-guide-grid-section{
+  margin: 0 auto;
+  max-width: 1750px;
 }

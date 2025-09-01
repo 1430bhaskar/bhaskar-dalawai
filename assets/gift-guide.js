@@ -237,19 +237,19 @@ content.innerHTML = `
       const caret = document.createElement('span');
       caret.className = 'gg-caret';
       caret.innerHTML = `
-        <svg class="arrow-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 4L6 7L9 4" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg class="arrow-icon" width="30" height="100%" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 4L6 7L9 4" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>`; // down-facing
       selectWrap.appendChild(caret);
 
       const arrowDown = `
-        <svg class="arrow-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 4L6 7L9 4" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg class="arrow-icon" width="30" height="100%" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 4L6 7L9 4" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>`;
 
       const arrowUp = `
-        <svg class="arrow-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 8L6 5L9 8" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg class="arrow-icon" width="30" height="100%" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 8L6 5L9 8" stroke="black" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>`;
 
       // Toggle caret on focus/blur
