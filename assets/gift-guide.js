@@ -128,16 +128,19 @@ function renderProductInPopup(product) {
   const content = document.createElement('div');
   content.className = 'modal-product';
   // UPDATED: Single-column layout with image at the top
-  content.innerHTML = `
+content.innerHTML = `
+  <div class="modal-product__top">
     <img src="${product.featured_image}" alt="${product.title}" class="product-image">
-    <div class="right">
+    <div class="modal-product__info">
       <h3 class="gg-p-title">${product.title}</h3>
       <p class="gg-p-price" data-el="price"></p>
-      <div class="gg-variants" data-el="options"></div>
-      <button class="gg-add" data-el="atc">Add to Cart</button>
-      <p class="gg-msg" data-el="note"></p>
     </div>
-  `;
+  </div>
+  <div class="gg-variants" data-el="options"></div>
+  <button class="gg-add" data-el="atc">Add to Cart</button>
+  <p class="gg-msg" data-el="note"></p>
+`;
+
   body.appendChild(content);
 
   // 2. Cache the elements we need to update
