@@ -249,7 +249,7 @@
 .gg-grid {
   max-width: 1750px;
   margin: 0 auto;
-  padding: 8px 6vw 80px;
+  padding: 1vw 4vw 3vw;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 22px;
