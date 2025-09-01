@@ -405,7 +405,7 @@
 
 .gg-variants {
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: 12px;
 }
 .gg-variant-row {
