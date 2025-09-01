@@ -137,7 +137,9 @@ content.innerHTML = `
     </div>
   </div>
   <div class="gg-variants" data-el="options"></div>
-  <button class="gg-add" data-el="atc">Add to Cart</button>
+  <button class="gg-add" data-el="atc">
+  ADD TO CART <span class="gg-add-arrow">→</span>
+  </button>
   <p class="gg-msg" data-el="note"></p>
 `;
 
@@ -226,9 +228,34 @@ content.innerHTML = `
         selected.size = normalizeSize(e.target.value);
         resolveVariant(product, elements);
       });
-      
-      selectWrap.innerHTML = '<span class="gg-caret">▼</span>';
-      selectWrap.prepend(sel);
+       
+      // Clear wrap first
+      selectWrap.innerHTML = '';
+      selectWrap.appendChild(sel);
+
+      // Add caret span with SVG
+      const caret = document.createElement('span');
+      caret.className = 'gg-caret';
+      caret.innerHTML = `
+        <svg class="arrow-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 4L6 7L9 4" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`; // down-facing
+      selectWrap.appendChild(caret);
+
+      const arrowDown = `
+        <svg class="arrow-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 4L6 7L9 4" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+
+      const arrowUp = `
+        <svg class="arrow-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 8L6 5L9 8" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+
+      // Toggle caret on focus/blur
+      sel.addEventListener('focus', () => caret.innerHTML = arrowUp);
+      sel.addEventListener('blur', () => caret.innerHTML = arrowDown);
+
       wrap.appendChild(selectWrap);
     }
     elements.options.appendChild(wrap);
