@@ -104,7 +104,7 @@
         }
       }
 
-      noteEl.textContent = 'Added to your cart! Reloading page...';
+      noteEl.textContent = 'Added to your cart! Updating ...';
       noteEl.style.color = 'green';
       
       // ⭐️ Reload the page after a short delay
