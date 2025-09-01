@@ -13,13 +13,13 @@
       "type": "gift-guide-product-grid",
       "name": "Gift Guide Product Grid",
       "settings": {
-        "product_1": "blue-silk-tuxedo",
-        "product_2": "classic-leather-jacket",
+        "product_1": "black-leather-bag",
+        "product_2": "blue-silk-tuxedo",
         "product_3": "dark-denim-top",
         "product_4": "floral-white-top",
         "product_5": "longsleeve-cotton-top",
         "product_6": "navy-sport-jacket",
-        "upsell_product": "dark-winter-jacket"
+        "upsell_product": "yellow-wool-jumper"
       }
     }
   },
