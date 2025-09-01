@@ -69,14 +69,13 @@
 }
 
 .gg-topbar__logo {
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  font-size: 1.125rem;
+  font-weight: 500;
+  font-size: 1.5rem;
   letter-spacing: 0.08em;
 }
 .gg-topbar__center {
   justify-self: center;
-  font-size: 17px;
+  font-size: 18px;
   text-align: center;
   color: #000;
 }
@@ -89,7 +88,7 @@
   background: #fff544;
   color: #000;
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 400;
   border-radius: 0px;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
   text-transform: uppercase;
@@ -236,13 +235,14 @@
 /* ---------- Ribbon ---------- */
 .gg-ribbon {
   text-align: center;
-  padding: 12px 6vw;
+  padding: 8px 6vw;
   border-top: 1px solid #eee;
   background: #f5f5f5;
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-family: "Jost", sans-serif;
+  font-weight: 400;
 }
 
 /* ---------- Grid ---------- */
@@ -350,7 +350,7 @@
   top: 10px;
   border: none;
   background: none;
-  font-size: 26px;
+  font-size: 30px;
   cursor: pointer;
   line-height: 1;
 }
@@ -419,9 +419,7 @@
 }
 .gg-opts {
   display: flex;
-      border-top: 1px solid;
-    border-bottom: 1px solid;
-    border-left: 1px solid;
+  border-left: 1px solid;
 }
 
 .gg-opt {
@@ -505,8 +503,8 @@
   cursor: pointer;
   transition: all 0.2s;
   font-size: 18px;
-      margin: 0;
-      border-right: 1px solid black;
+  margin: 0;
+  border-right: 1px solid black;
 }
 .gg-swatch:hover {
   background: #f0f0f0;
@@ -517,8 +515,8 @@
   font-weight: 600;
   font-family: "Jost", sans-serif;
   font-size: 18px;
-      margin: 0;
-          border-right: 1px solid #000;
+  margin: 0;
+  border-right: 1px solid #000;
 }
 
 /* Size dropdown */
@@ -592,10 +590,13 @@
 }
 
 /* For WebKit (Chrome/Safari) */
-.gg-select option:checked,
-.gg-select option:hover {
-  background: black !important;
+.gg-select option:checked {
+  background: black ;
   color: white;
+}
+.gg-select option:hover {
+  background: #f5f5f5 !important;
+  cursor: pointer;
 }
 
 /* For Firefox */
@@ -603,7 +604,6 @@
   color: transparent;
   text-shadow: 0 0 0 black;
 }
-
 
 .gg-caret {
   position: absolute;
@@ -740,7 +740,7 @@
   max-width: 1750px;
 }
 
-.gift-guide-grid-section{
+.gift-guide-grid-section {
   margin: 0 auto;
   max-width: 1750px;
 }

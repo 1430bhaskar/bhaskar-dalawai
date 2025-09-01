@@ -138,9 +138,17 @@ content.innerHTML = `
   </div>
   <div class="gg-variants" data-el="options"></div>
   <button class="gg-add" data-el="atc">
-  ADD TO CART <svg class="gg-arrow" viewBox="0 0 24 24" width="20" height="100%" aria-hidden="true">
-  <path d="M2 12h14M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-  </button>
+  ADD TO CART
+  <svg class="gg-arrow" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <path d="M2 12h14M13 5l7 7-7 7" 
+          fill="none" 
+          stroke="currentColor" 
+          stroke-width="1.6" 
+          stroke-linecap="round" 
+          stroke-linejoin="round">
+    </path>
+  </svg>
+</button>
   <p class="gg-msg" data-el="note"></p>
 `;
 
