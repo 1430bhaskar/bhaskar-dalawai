@@ -155,7 +155,6 @@
   min-height: 780px;
   background-position: center;
   background-repeat: repeat-x;
-  min-height: 560px;
   display: flex;
   align-items: end;
 }
@@ -580,24 +579,31 @@
   font-family: "Jost", sans-serif;
 }
 
-.gg-select option[value=""] {
-  text-align: left;
-  color: #888; /* lighter gray so it looks like placeholder */
+/* Placeholder (disabled) */
+.gg-select option[disabled] {
+  color: #888;
+  text-align: left; /* only placeholder left aligned */
 }
 
-/* All other options center aligned */
-.gg-select option:not([value=""]) {
+/* Options */
+.gg-select option {
   text-align: center;
 }
 
-/* Option hover styling (works in most browsers except Safari) */
+/* For WebKit (Chrome/Safari) */
+.gg-select option:checked,
 .gg-select option:hover {
-  background: #000;
-  color: #fff;
+  background: black !important;
+  color: white;
 }
-.gg-select:focus {
-  outline: 2px solid #000;
+
+/* For Firefox */
+.gg-select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 black;
 }
+
+
 .gg-caret {
   position: absolute;
   right: 12px;
