@@ -39,43 +39,12 @@ Gift Guide — Product Grid (image-only cards)
   </div>
 
   <!-- Modal -->
-<div id="gg-modal" class="gg-popup">
-  <button class="gg-popup-close">×</button>
-  <div class="gg-popup-content">
-    <img src="{{ product.featured_image | img_url: 'medium' }}" alt="{{ product.title }}">
-    <h3 class="gg-popup-title">{{ product.title }}</h3>
-    <p class="gg-popup-price">{{ product.price | money }}</p>
-    <p class="gg-popup-description">{{ product.description }}</p>
-    
-    <div class="gg-popup-options">
-      <label>Color</label>
-      <div class="gg-popup-colors">
-        {% for option in product.options_with_values %}
-          {% if option.name == "Color" %}
-            {% for value in option.values %}
-              <button class="gg-color-option" data-value="{{ value }}">{{ value }}</button>
-            {% endfor %}
-          {% endif %}
-        {% endfor %}
-      </div>
-      
-      <label>Size</label>
-      <select class="gg-size-select">
-        <option value="">Choose your size</option>
-        {% for option in product.options_with_values %}
-          {% if option.name == "Size" %}
-            {% for value in option.values %}
-              <option value="{{ value }}">{{ value }}</option>
-            {% endfor %}
-          {% endif %}
-        {% endfor %}
-      </select>
+  <div id="gg-modal" class="gg-modal gg-is-hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Quick add">
+    <div class="gg-modal__dialog" role="document">
+      <button class="gg-modal__close" type="button" aria-label="Close">×</button>
+      <div class="gg-modal__body"><!-- injected by JS --></div>
     </div>
-    
-    <button class="gg-add-to-cart">ADD TO CART →</button>
   </div>
-</div>
-
 </section>
 
 {% schema %}
